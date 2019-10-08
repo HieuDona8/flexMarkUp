@@ -563,18 +563,14 @@ const mapStateToProps = state => {
   } = state.ListingPage;
   const { currentUser } = state.user;
 
-  //console.log("XuatState", state.marketplaceData.entities.listing)
-
   const getListing = id => {
     const ref = { id, type: 'listing' };
-    //console.log("xuatList", state.marketplaceData.entities.listing);
     const listings = getMarketplaceEntities(state, [ref]);
     return listings.length === 1 ? listings[0] : null;
   };
 
   const getOwnListing = id => {
     const ref = { id, type: 'ownListing' };
-    //console.log("xuatList2", state.marketplaceData.entities.listing);
     const listings = getMarketplaceEntities(state, [ref]);
     return listings.length === 1 ? listings[0] : null;
   };
