@@ -11,7 +11,7 @@ const SectionCapacity = props => {
   //   return null;
   // }
 
-  const capacity = publicData.capacity;
+  const { capacity } = publicData || {};
   const capacityOption = options.find(
     option => option.key === capacity
   );

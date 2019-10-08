@@ -45,6 +45,7 @@
   --marketplaceColor: #c0392b;
   --marketplaceColorLight: #ff4c38;
   --marketplaceColorDark: #8c291e;
+  --marketplaceColorGreen:rgb(0, 167, 111);
 
   /* Used with inline CSS SVGs */
   --marketplaceColorEncoded: %23c0392b;

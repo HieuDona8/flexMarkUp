@@ -88,7 +88,9 @@ EditListingCapacityFormComponent.defaultProps = {
 };
 
 EditListingCapacityFormComponent.propTypes = {
-  intl: intlShape.isRequired, //tại sao lại comment
+  //Library changes => change impout
+  //import { intlShape, injectIntl, FormattedMessage } from '../../util/reactIntl';
+  intl: intlShape.isRequired,
   onSubmit: func.isRequired,
   saveActionMsg: string.isRequired,
   updated: bool.isRequired,

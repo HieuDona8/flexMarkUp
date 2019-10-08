@@ -160,6 +160,8 @@ export { default as EditListingPhotosPanel } from './EditListingPhotosPanel/Edit
 export { default as EditListingPoliciesPanel } from './EditListingPoliciesPanel/EditListingPoliciesPanel';
 export { default as EditListingPricingPanel } from './EditListingPricingPanel/EditListingPricingPanel';
 export { default as EditListingWizard } from './EditListingWizard/EditListingWizard';
+//create new capacity panel
+export { default as EditListingCapacityPanel } from './EditListingCapacityPanel/EditListingCapacityPanel';
 export { default as Footer } from './Footer/Footer';
 export { default as SectionHero } from './SectionHero/SectionHero';
 export { default as SectionHowItWorks } from './SectionHowItWorks/SectionHowItWorks';
@@ -169,7 +171,3 @@ export { default as Topbar } from './Topbar/Topbar';
 export { default as TopbarDesktop } from './TopbarDesktop/TopbarDesktop';
 export { default as TopbarMobileMenu } from './TopbarMobileMenu/TopbarMobileMenu';
 export { default as TransactionPanel } from './TransactionPanel/TransactionPanel';
-
-
-//my pannel
-export { default as EditListingCapacityPanel } from './EditListingCapacityPanel/EditListingCapacityPanel';

@@ -6,6 +6,9 @@ import { ensureOwnListing } from '../../util/data';
 import { ListingLink } from '../../components';
 import { EditListingCapacityForm } from '../../forms';
 import config from '../../config.js';
+import {
+  LISTING_PAGE_PARAM_TYPE_DRAFT,
+} from '../../util/urlHelpers';
 
 import css from './EditListingCapacityPanel.css';
 
@@ -26,7 +29,7 @@ const EditListingCapacityPanel = props => {
   const currentListing = ensureOwnListing(listing);
   const { publicData } = currentListing.attributes;
 
-  const panelTitle = currentListing.id ? (
+  const panelTitle = currentListing.attributes.state === LISTING_PAGE_PARAM_TYPE_DRAFT ? (
     <FormattedMessage
       id="EditListingCapacityPanel.title"
       values={{ listingTitle: <ListingLink listing={listing} /> }}
@@ -48,7 +51,6 @@ const EditListingCapacityPanel = props => {
               capacity,
             },
           };
-          console.log("myUpdate",updateValues);
           onSubmit(updateValues);
         }}
         onChange={onChange}
