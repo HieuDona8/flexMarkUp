@@ -96,7 +96,8 @@ const defaultProps = {
   // Internationalization props
   // Multilocale support can be achieved with displayFormat like moment.localeData.longDateFormat('L')
   // https://momentjs.com/
-  displayFormat: 'ddd, MMM D',
+  //displayFormat: 'ddd, MMM D',
+  displayFormat: 'DD/MM/YYYY',
   monthFormat: 'MMMM YYYY',
   weekDayFormat: 'dd',
   phrases: {
@@ -170,6 +171,11 @@ class DateInputComponent extends Component {
     const initialMoment = initialDate ? moment(initialDate) : null;
 
     const date = value && value.date instanceof Date ? moment(value.date) : initialMoment;
+    
+    //const dateFormat = value && value.date instanceof Date ? moment(value.date) : initialMoment;
+
+    //const date = new Intl.DateTimeFormat('en-GB').format(dateFormat);
+    //console.log("nullT",);
 
     const isDayBlocked = timeSlots
       ? day => !timeSlots.find(timeSlot => timeSlotEqualsDay(timeSlot, day))
@@ -192,6 +198,8 @@ class DateInputComponent extends Component {
     const classes = classNames(css.inputRoot, className, {
       [css.withMobileMargins]: useMobileMargins,
     });
+
+    
 
     return (
       <div className={classes}>

@@ -963,5 +963,8 @@
   "SearchFiltersPanel.myOption": "My Options",
   "ListingPage.capacityTitle": "Title listing page capacity",
   "TopbarDesktop.myPage": "My Page",
-  "BookingDatesForm.hourStartPlaceholder": "00:00"
+  "BookingDatesForm.hourStartPlaceholder": "00:00",
+  "BookingBreakdown.bookingStart": "Booking Start: ",
+  "BookingBreakdown.bookingEnd": "Booking End:",
+  "BookingBreakdown.baseUnitQuantity": "Price on person: "
 }

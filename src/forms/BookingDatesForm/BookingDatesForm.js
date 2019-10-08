@@ -6,10 +6,10 @@ import { FormattedMessage, intlShape, injectIntl } from '../../util/reactIntl';
 import classNames from 'classnames';
 import moment from 'moment';
 import { required, bookingDatesRequired, composeValidators } from '../../util/validators';
-import { START_DATE, END_DATE } from '../../util/dates';
+import { START_DATE, END_DATE, START_HOUR, END_HOUR } from '../../util/dates';
 import { propTypes } from '../../util/types';
 import config from '../../config';
-import { Form, PrimaryButton, FieldDateRangeInput } from '../../components';
+import { Form, PrimaryButton, FieldDateRangeInput, FieldSelect, FieldDateInput } from '../../components';
 import EstimatedBreakdownMaybe from './EstimatedBreakdownMaybe';
 
 import css from './BookingDatesForm.css';
@@ -22,6 +22,8 @@ export class BookingDatesFormComponent extends Component {
     this.state = { focusedInput: null };
     this.handleFormSubmit = this.handleFormSubmit.bind(this);
     this.onFocusedInputChange = this.onFocusedInputChange.bind(this);
+
+    this.startValue = null;
   }
 
   // Function that can be passed to nested components
@@ -35,13 +37,24 @@ export class BookingDatesFormComponent extends Component {
   // focus on that input, otherwise continue with the
   // default handleSubmit function.
   handleFormSubmit(e) {
-    const { startDate, endDate } = e.bookingDates || {};
+    const { startDate, endDate, hourStart, hourEnd } = e || {};    
+
     if (!startDate) {
-      e.preventDefault();
+      //e.preventDefault();      
       this.setState({ focusedInput: START_DATE });
+      return false;
     } else if (!endDate) {
-      e.preventDefault();
+      //e.preventDefault();
       this.setState({ focusedInput: END_DATE });
+      return false;
+    } else if (!hourStart) {
+      //e.preventDefault();
+      this.setState({ focusedInput: START_HOUR });
+      return false;
+    } else if (!hourEnd) {
+      //e.preventDefault();
+      this.setState({ focusedInput: END_HOUR });
+      return false;
     } else {
       this.props.onSubmit(e);
     }
@@ -74,6 +87,7 @@ export class BookingDatesFormComponent extends Component {
       <FinalForm
         {...rest}
         unitPrice={unitPrice}
+        //onSubmit={(e) => {console.log(e);this.handleFormSubmit(e)}}
         onSubmit={this.handleFormSubmit}
         render={fieldRenderProps => {
           const {
@@ -89,13 +103,118 @@ export class BookingDatesFormComponent extends Component {
             values,
             timeSlots,
             fetchTimeSlotsError,
+            form
           } = fieldRenderProps;
-          const { startDate, endDate } = values && values.bookingDates ? values.bookingDates : {};
+          const { startDate, endDate, hourStart, hourEnd } = values && values.startDate && values.hourStart && values.hourEnd ? values : {};
 
-          const bookingStartLabel = intl.formatMessage({
-            id: 'BookingDatesForm.bookingStartTitle',
-          });
+                    
+          ///////////////
+          // EDIT DATE
+          //INPUT startDate FIRST (don't have endDate)
+          if(values.startDate && !values.endDate){
+            form.change("endDate", { date: new Date(moment(values.startDate.date).add(1, "days")) });
+            this.startValue = moment(values.startDate.date).diff(moment(), "days")
+          }
+
+          
+          
+          //INPUT endDay FIRST
+          if (!values.startDate && values.endDate) {
+            //nếu endDay <= curent => reset startDay và endDay else startDay < endDay 1 ngày
+            if (moment(values.endDate.date).diff(moment(), "days") <= 0) {
+              form.change("startDate", { date: new Date(moment()) });
+              form.change("endDate", { date: new Date(moment().add(1, "days")) });
+              this.startValue = moment(values.startDate.date).diff(moment(), "days")
+            } else {
+              //subtract 1 day form endDate
+              form.change("startDate", { date: new Date(moment(values.endDate.date).subtract(1, "days")) });
+              this.startValue = moment(values.endDate.date).subtract(1, "days").diff(moment(), "days");              
+            }
+          }
+
+          //NOT update HAVE startDate, endDate AND start - end =>0; = 0 BECAUSE booking theo time
+          if (values.startDate && values.endDate && moment(values.startDate.date).diff(moment(values.endDate.date), "days") > 0) {
+            const myStarCur = moment(values.startDate.date).diff(moment(), "days");
+            //end lùi cập nhật start
+            if(myStarCur === this.startValue){
+              form.change("startDate", { date: new Date(moment(values.endDate.date)) });
+              this.startValue = moment(values.startDate.date).diff(moment(), "days")
+            } else{
+              //start tiến cập nhật end
+              form.change("endDate", { date: new Date(moment(values.startDate.date).add(1, "days")) });
+              this.startValue = moment(values.startDate.date).diff(moment(), "days");
+            }
+          }
+
+
+
+          //////EIDT TIME///////////////////////          
+          const hourStartPlaceholder = intl.formatMessage({ id: 'BookingDatesForm.hourStartPlaceholder' });
+          const HOUR_FORMAT = 'hh:mm a';         
+
+          const generateHourOptions = (date, startTime, endTime) => {
+            let options = [];
+            for(let i = startTime.hour; i <= endTime.hour; i++) {
+              // e.g. 00:30 ... 22:30.
+              const getHour = i >= 10 ? i : `0${i}`;
+              const halfHour24 = `${getHour}:30`;
+              //const halfHour24 = `${i >= 10 ? i : `0${i}`}:30`;
+              const halfHourHuman = date
+                .clone()
+                .add(i, 'hours')
+                .add(30, 'minutes')
+                .format(HOUR_FORMAT);
+
+              const optionHalfHour = (
+                <option key={halfHour24} value={halfHour24}>
+                  {halfHourHuman}
+                </option>
+              );
+
+              // 00:00 ... 24:00. 24:00 will be converted to the next day 00:00.
+              const getSharpHour = i >= 10 ? i : `0${i}`;
+              const sharpHour24 = `${getSharpHour}:00`; 
+
+              //const sharpHour24 = `${i >= 10 ? i : `0${i}`}:00`;
+              const sharpHourHuman = date
+                .clone()
+                .add(i, 'hours')
+                .format(HOUR_FORMAT);
+
+              const optionSharpHour = (
+                <option key={sharpHour24} value={sharpHour24}>
+                  {sharpHourHuman}
+                </option>
+              );
+
+              const startsOnHalfHour = i === startTime.hour && startTime.minute === 30;
+              const endsOnSharpHour = i === endTime.hour && endTime.minute === 0;
+
+              // Define order in the option array
+              if (startsOnHalfHour) {
+                // e.g. ['00:30']
+                options.push(optionHalfHour);
+              } else if (endsOnSharpHour) {
+                // e.g. ['21:00']
+                options.push(optionSharpHour);
+              } else {
+                // e.g. ['01:00', '01:30']
+                options.push(optionSharpHour);
+                options.push(optionHalfHour);
+              }
+            }
+            return options;
+          };
+
+
+          //////////////////////////////
+          //config lable
+          const bookingStartLabel = intl.formatMessage({ id: 'BookingDatesForm.bookingStartTitle' });
           const bookingEndLabel = intl.formatMessage({ id: 'BookingDatesForm.bookingEndTitle' });
+          const bookingTimeStartLabel = intl.formatMessage({ id: 'BookingDatesForm.bookingTimeStartTitle' });
+          const bookingTimeEndLabel = intl.formatMessage({ id: 'BookingDatesForm.bookingTimeEndTitle' });
+
+
           const requiredMessage = intl.formatMessage({ id: 'BookingDatesForm.requiredDate' });
           const startDateErrorMessage = intl.formatMessage({
             id: 'FieldDateRangeInput.invalidStartDate',
@@ -113,18 +232,21 @@ export class BookingDatesFormComponent extends Component {
           // EstimatedBreakdownMaybe component to change the calculations
           // for customized payment processes.
           const bookingData =
-            startDate && endDate
+            startDate && endDate && hourEnd && hourStart
               ? {
-                  unitType,
-                  unitPrice,
-                  startDate,
-                  endDate,
+                unitType,
+                unitPrice,
+                startDate,
+                endDate,
+                hourStart,
+                hourEnd,
 
-                  // NOTE: If unitType is `line-item/units`, a new picker
-                  // for the quantity should be added to the form.
-                  quantity: 1,
-                }
-              : null;
+                // NOTE: If unitType is `line-item/units`, a new picker
+                // for the quantity should be added to the form.
+                quantity: 1,
+              } : null;
+               
+          //console.log("Mybooking: ", bookingData);
           const bookingInfo = bookingData ? (
             <div className={css.priceBreakdownContainer}>
               <h3 className={css.priceBreakdownTitle}>
@@ -133,7 +255,7 @@ export class BookingDatesFormComponent extends Component {
               <EstimatedBreakdownMaybe bookingData={bookingData} />
             </div>
           ) : null;
-
+          
           const dateFormatOptions = {
             weekday: 'short',
             month: 'short',
@@ -154,29 +276,66 @@ export class BookingDatesFormComponent extends Component {
             submitButtonWrapperClassName || css.submitButtonWrapper
           );
 
+          const classDate = classNames(css.dateBook, css.specialBook)
+
+          
+
           return (
             <Form onSubmit={handleSubmit} className={classes}>
               {timeSlotsError}
-              <FieldDateRangeInput
-                className={css.bookingDates}
-                name="bookingDates"
-                unitType={unitType}
-                startDateId={`${formId}.bookingStartDate`}
-                startDateLabel={bookingStartLabel}
-                startDatePlaceholderText={startDatePlaceholderText}
-                endDateId={`${formId}.bookingEndDate`}
-                endDateLabel={bookingEndLabel}
-                endDatePlaceholderText={endDatePlaceholderText}
-                focusedInput={this.state.focusedInput}
-                onFocusedInputChange={this.onFocusedInputChange}
-                format={identity}
-                timeSlots={timeSlots}
-                useMobileMargins
-                validate={composeValidators(
-                  required(requiredMessage),
-                  bookingDatesRequired(startDateErrorMessage, endDateErrorMessage)
-                )}
-              />
+              <div className={css.timeContainer}>
+                <div className={css.timeItem}>
+                  <FieldDateInput
+                    className={classDate}
+                    name='startDate'
+                    useMobileMargins={false}
+                    id="startBookingDate"
+                    label={bookingStartLabel}
+                    placeholderText={moment().format('DD/MM/YYYY')}                                    
+                  />
+                  <FieldSelect
+                    className={css.hourBook}
+                    
+                    id={"hourStart"}
+                    name={"hourStart"}
+                    label={bookingTimeStartLabel}
+                    parse={(value, name) => {                        
+                      return value && value.length > 0 ? value : null;
+                    }}
+                  >
+                    <option value="" disabled>
+                      {hourStartPlaceholder}
+                    </option>
+                    {generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: 23, minute: 30 })}
+                  </FieldSelect>                              
+                </div>
+                <div className={css.timeItem}>                  
+                  <FieldDateInput
+                    className={css.dateBook}
+                    name='endDate'
+                    useMobileMargins={false}
+                    id={bookingEndLabel}     
+                    label={bookingEndLabel}
+                    placeholderText={moment().add(1, "day").format('DD/MM/YYYY')}
+                  />                                   
+                  <FieldSelect
+                    className={css.hourBook} 
+                    id={"hourEnd"}
+                    name={"hourEnd"}
+                    label={bookingTimeEndLabel}
+                    //validate={hourStartRequired}
+                    parse={(value, name) => {                                                
+                      return value && value.length > 0 ? value : null;
+                    }}
+                  >
+                    <option value="" disabled>
+                      {hourStartPlaceholder}
+                    </option>
+                    {generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: 23, minute: 30 })}
+                  </FieldSelect>                                           
+                </div>
+              </div>
+
               {bookingInfo}
               <p className={css.smallPrint}>
                 <FormattedMessage

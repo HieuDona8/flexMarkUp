@@ -7,10 +7,14 @@
 
 .bookingDates {
   flex-shrink: 0;
-  margin-bottom: 38px;
+  margin-bottom: 20px;
 
   /* Ensure that calendar dropdown gets some stacking context relative to other form items below */
   z-index: 1;
+
+  /*myCss*/
+  display: flex;
+  flex-direction: column;
 }
 
 .priceBreakdownContainer {
@@ -84,4 +88,28 @@
     padding: 0;
     width: 100%;
   }
+}
+
+
+.timeContainer{
+
+}
+
+.timeItem{
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+}
+
+.dateBook, .hourBook{
+  flex-basis: 45%;
+}
+
+.dateBook > label, .hourBook > label{
+  color: var(--marketplaceColorLabel);
+}
+
+.specialBook{
+  position: relative;
+  z-index: 2;
 }

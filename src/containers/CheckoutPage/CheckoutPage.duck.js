@@ -4,6 +4,8 @@ import { denormalisedResponseEntities } from '../../util/data';
 import { storableError } from '../../util/errors';
 import {
   TRANSITION_REQUEST_PAYMENT,
+  TRANSITION_REQUEST_FIRST_TIME,
+  TRANSITION_REQUEST,
   TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY,
   TRANSITION_CONFIRM_PAYMENT,
 } from '../../util/transaction';
@@ -169,7 +171,8 @@ export const initiateOrder = (orderParams, transactionId) => (dispatch, getState
       }
     : {
         processAlias: config.bookingProcessAlias,
-        transition: TRANSITION_REQUEST_PAYMENT,
+        //transition: TRANSITION_REQUEST_PAYMENT,
+        transition: TRANSITION_REQUEST_FIRST_TIME,
         params: orderParams,
       };
   const queryParams = {
@@ -260,22 +263,53 @@ export const sendMessage = params => (dispatch, getState, sdk) => {
  * the price with the chosen information.
  */
 export const speculateTransaction = params => (dispatch, getState, sdk) => {
+  console.log("myPAGRAM: ", params);
+
+  
   dispatch(speculateTransactionRequest());
   const bodyParams = {
-    transition: TRANSITION_REQUEST_PAYMENT,
+    transition: TRANSITION_REQUEST_FIRST_TIME,
     processAlias: config.bookingProcessAlias,
     params: {
       ...params,
+      //bookingDisplayStart: new Date("2019-10-5T00:00:00.000Z"),
+      //bookingDisplayEnd: new Date("2018-10-5T00:00:00.000Z"),
       cardToken: 'CheckoutPage_speculative_card_token',
+      //cardToken: "tok_mastercard",
     },
   };
+
+
   const queryParams = {
     include: ['booking', 'provider'],
     expand: true,
   };
+
+
+  //console.log("bodyPa: ", bodyParams);
+  //console.log("queryP: ", queryParams);
+  
   return sdk.transactions
-    .initiateSpeculative(bodyParams, queryParams)
+    .initiateSpeculative(
+      bodyParams, queryParams
+      // {
+      //   transition: TRANSITION_REQUEST_FIRST_TIME,
+      //   processAlias: config.bookingProcessAlias,
+      //   params: {
+      //     listingId: "5d80d184-8491-4555-93f0-0d7da9b8333b",
+      //     bookingStart: new Date("2019-10-06T00:00:00.000Z"),
+      //     bookingEnd: new Date("2019-10-07T00:00:00.000Z"),
+      //     seats: 2,
+      //     quantity: 1,
+      //     units: 1,
+      //     cardToken: "CheckoutPage_speculative_card_token"
+      //   }
+      // }, {
+      //   expand: true
+      // }
+    )
     .then(response => {
+      console.log("respon: ", response)
       const entities = denormalisedResponseEntities(response);
       if (entities.length !== 1) {
         throw new Error('Expected a resource in the sdk.transactions.initiateSpeculative response');

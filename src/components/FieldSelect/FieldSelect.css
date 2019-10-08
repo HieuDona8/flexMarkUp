@@ -18,7 +18,7 @@
 
 .selectSuccess {
   color: var(--matterColor);
-  border-bottom-color: var(--successColor);
+  border-bottom-color: var(--attentionColorSuccess);
 }
 
 .selectError {

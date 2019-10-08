@@ -49,7 +49,8 @@
     @apply --marketplaceInputStyles;
     border-bottom-style: solid;
     border-bottom-width: 2px;
-    border-bottom-color: var(--attentionColor);
+    /*mycolor change*/
+    border-bottom-color: var(--attentionColorBottom);
     transition: border-bottom-color var(--transitionStyle);
     transition: all 0.15s ease-out;
     background: none;
@@ -68,7 +69,9 @@
   }
   & :global(.DayPicker__horizontal) {
     margin: 0 auto;
-    background-color: var(--marketplaceColor);
+    /*0color of table*/
+    /* background-color: var(--marketplaceColor); */
+    background-color: var(--marketplaceColorDate);
     box-shadow: none;
   }
 
@@ -128,7 +131,9 @@
   }
 
   & :global(.CalendarDay__default) {
-    background-color: var(--marketplaceColor);
+    /*1 color of cell*/
+    /* background-color: var(--marketplaceColor); */
+    background-color: var(--marketplaceColorDate);
     border: 0;
     padding: 0;
     width: 100%;

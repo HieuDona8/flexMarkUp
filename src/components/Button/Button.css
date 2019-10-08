@@ -29,6 +29,7 @@
 
 .primaryButton {
   /* Class handle for primary button state styles */
+  background-color: var(--attentionColorBottom);
 }
 .secondaryButton {
   /* Class handle for secondary button state styles */
