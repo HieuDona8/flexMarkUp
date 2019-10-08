@@ -75,6 +75,7 @@
   "BookingDateRangeFilter.labelPopup": "Dates",
   "BookingDateRangeFilter.labelSelectedPlain": "{dates}",
   "BookingDateRangeFilter.labelSelectedPopup": "{dates}",
+  "BookingDatesForm.hourStartPlaceholder": "00:00",
   "BookingPanel.closedListingButtonText": "Sorry, this listing has been closed.",
   "BookingPanel.ctaButtonMessage": "Request to book",
   "BookingPanel.hostedBy": "Hosted by {name}",

@@ -7,10 +7,10 @@ import {
   LayoutWrapperFooter,
   Footer,
   NamedLink,
-  ExternalLink,
-  MyTransaction, //mytranstaction
-  MyDate,
+  ExternalLink,  
 } from '../../components';
+
+import { MyBookingForm } from '../../forms';
 
 import css from './MyPage.css';
 import image from './img/konami-contra.jpg';
@@ -34,28 +34,21 @@ const MyPage = () => {
         <LayoutWrapperMain>
           <img src={image} alt="My first ice cream." />
 
-
-          {/* <div className={css.bookRoom}>
+          <div className={css.bookRoom}>
             <div className={css.bookContent}>
               <div className={css.fromBook}>
-                <MyDate className={css.inputBook}>
+                <MyBookingForm className={css.inputBook}>
                   
-                </MyDate>
+                </MyBookingForm>
               </div>
               
               <div className={css.detailPrice}>
                 
               </div>
             </div>
-          </div> */}
-
-
-          <div>
-            <NamedLink className={css.changePage} name="LandingPage">Go to home page</NamedLink> or
-            <ExternalLink className={css.changePage} href="https://google.com">
-              &nbsp; Go to Google
-            </ExternalLink>
           </div>
+
+
         </LayoutWrapperMain>
         <LayoutWrapperFooter>
           <Footer />

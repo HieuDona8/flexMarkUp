@@ -1,0 +1,46 @@
+@import '../../marketplace.css';
+
+.transaction{
+  width: 100%;
+}
+
+.title{
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.titleMain{
+  font-size: 30px;
+  font-weight: 900;
+  color: #226885;
+  margin-bottom: 15px;
+}
+
+.describe{
+  color: #2a738e;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.time{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.itemInput{
+  flex-basis: 40%;
+  margin-right: 4%;
+}
+
+
+.dateBook{
+ position: relative;
+ z-index: 1;
+}
+
+.First{
+  z-index: 5;
+  position: absolute;
+}
