@@ -10,6 +10,7 @@ import {
   LandingPage,
   ListingPage,
   ManageListingsPage,
+  MyPage,
   NotFoundPage,
   PasswordChangePage,
   PasswordRecoveryPage,
@@ -47,6 +48,11 @@ const RedirectToLandingPage = () => <NamedRedirect name="LandingPage" />;
 // See behaviour from Routes.js where Route is created.
 const routeConfiguration = () => {
   return [
+    {
+      path: '/mypage',
+      name: 'MyPage',
+      component: MyPage,
+    },
     {
       path: '/',
       name: 'LandingPage',

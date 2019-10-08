@@ -1,0 +1,37 @@
+@import '../../marketplace.css';
+
+.root {
+  
+
+  /* Use CSS variable imported from marketplace.css */
+  
+}
+
+.changePage{
+  color: black;
+}
+
+.bookRoom{
+  width: 100%;
+  padding: 24px 24px;
+}
+
+.bookContent{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.fromBook{
+  flex-basis: 50%;
+}
+
+.detailPrice{
+  flex-basis: 50%;
+}
+
+.inputBook{
+ 
+
+}
