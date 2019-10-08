@@ -57,6 +57,7 @@ const estimatedTotalPrice = (unitPrice, unitCount) => {
 // an estimated transaction object for that use case.
 const estimatedTransaction = (unitType, bookingStart, bookingEnd, unitPrice, quantity, hourStart, hourEnd) => {
 
+
   const now = new Date();
   const isNightly = unitType === LINE_ITEM_NIGHT;
   const isDaily = unitType === LINE_ITEM_DAY;

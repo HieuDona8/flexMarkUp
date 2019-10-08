@@ -8,6 +8,15 @@ import {
   TRANSITION_REQUEST,
   TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY,
   TRANSITION_CONFIRM_PAYMENT,
+  TRANSITION_ACCEPT,
+  TRANSITION_COMPLETE,
+  TRANSITION_REVIEW_1_BY_CUSTOMER,
+  TRANSITION_REVIEW_1_BY_PROVIDER,
+  TRANSITION_REVIEW_2_BY_CUSTOMER,
+  TRANSITION_REVIEW_2_BY_PROVIDER,
+  TRANSITION_EXPIRE_CUSTOMER_REVIEW_PERIOD,
+  TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD,
+  TRANSITION_EXPIRE_REVIEW_PERIOD,
 } from '../../util/transaction';
 import * as log from '../../util/log';
 import { fetchCurrentUserHasOrdersSuccess, fetchCurrentUser } from '../../ducks/user.duck';
@@ -262,13 +271,36 @@ export const sendMessage = params => (dispatch, getState, sdk) => {
  * pricing info for the booking breakdown to get a proper estimate for
  * the price with the chosen information.
  */
-export const speculateTransaction = params => (dispatch, getState, sdk) => {
+export const speculateTransaction = params => async(dispatch, getState, sdk) => {
   console.log("myPAGRAM: ", params);
+  let typeBooking = TRANSITION_REQUEST_FIRST_TIME;
+  //check first booking
+  await sdk.transactions.query({
+    only: "order",
+    lastTransitions: [
+      TRANSITION_REQUEST_FIRST_TIME, 
+      TRANSITION_REQUEST, 
+      TRANSITION_CONFIRM_PAYMENT,
+      TRANSITION_ACCEPT,
+      TRANSITION_COMPLETE,
+      TRANSITION_REVIEW_1_BY_CUSTOMER,
+      TRANSITION_REVIEW_1_BY_PROVIDER,
+      TRANSITION_REVIEW_2_BY_CUSTOMER,
+      TRANSITION_REVIEW_2_BY_PROVIDER,
+      TRANSITION_EXPIRE_CUSTOMER_REVIEW_PERIOD,
+      TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD,
+      TRANSITION_EXPIRE_REVIEW_PERIOD,
+    ]
+  }).then(res => {
+    console.log("check first: ", res.data.data.length);
+    if(res.data.data.length > 0){      
+      typeBooking = TRANSITION_REQUEST;
+    }
+  });
 
-  
   dispatch(speculateTransactionRequest());
   const bodyParams = {
-    transition: TRANSITION_REQUEST_FIRST_TIME,
+    transition: typeBooking,
     processAlias: config.bookingProcessAlias,
     params: {
       ...params,
@@ -279,34 +311,14 @@ export const speculateTransaction = params => (dispatch, getState, sdk) => {
     },
   };
 
-
   const queryParams = {
     include: ['booking', 'provider'],
     expand: true,
   };
 
-
-  //console.log("bodyPa: ", bodyParams);
-  //console.log("queryP: ", queryParams);
-  
   return sdk.transactions
     .initiateSpeculative(
       bodyParams, queryParams
-      // {
-      //   transition: TRANSITION_REQUEST_FIRST_TIME,
-      //   processAlias: config.bookingProcessAlias,
-      //   params: {
-      //     listingId: "5d80d184-8491-4555-93f0-0d7da9b8333b",
-      //     bookingStart: new Date("2019-10-06T00:00:00.000Z"),
-      //     bookingEnd: new Date("2019-10-07T00:00:00.000Z"),
-      //     seats: 2,
-      //     quantity: 1,
-      //     units: 1,
-      //     cardToken: "CheckoutPage_speculative_card_token"
-      //   }
-      // }, {
-      //   expand: true
-      // }
     )
     .then(response => {
       console.log("respon: ", response)
