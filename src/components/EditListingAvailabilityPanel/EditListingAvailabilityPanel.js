@@ -27,17 +27,17 @@ const EditListingAvailabilityPanel = props => {
   const currentListing = ensureOwnListing(listing);
   const isPublished = currentListing.id && currentListing.attributes.state !== LISTING_STATE_DRAFT;
   const defaultAvailabilityPlan = {
-    type: 'availability-plan/day',
+    type: 'availability-plan/time',
     timezone: 'Asia/Ho_Chi_Minh',
     entries: [
-      { dayOfWeek: 'mon', seats: 2 , startTime: '00:00', endTime: '23:30'},
-      { dayOfWeek: 'tue', seats: 2 , startTime: '00:00', endTime: '23:30'},
-      { dayOfWeek: 'wed', seats: 2 , startTime: '00:00', endTime: '23:30'},
-      { dayOfWeek: 'thu', seats: 2 , startTime: '00:00', endTime: '23:30'},
-      { dayOfWeek: 'fri', seats: 2 , startTime: '00:00', endTime: '23:30'},
-      { dayOfWeek: 'sat', seats: 2 , startTime: '00:00', endTime: '23:30'},
-      { dayOfWeek: 'sun', seats: 2 , startTime: '00:00', endTime: '23:30'},
-    ],
+      { dayOfWeek: 'mon', seats: 2 , startTime: '00:00', endTime: '23:50'},
+      { dayOfWeek: 'tue', seats: 2 , startTime: '00:00', endTime: '23:50'},
+      { dayOfWeek: 'wed', seats: 2 , startTime: '00:00', endTime: '23:50'},
+      { dayOfWeek: 'thu', seats: 2 , startTime: '00:00', endTime: '23:50'},
+      { dayOfWeek: 'fri', seats: 2 , startTime: '00:00', endTime: '23:50'},
+      { dayOfWeek: 'sat', seats: 2 , startTime: '00:00', endTime: '23:50'},
+      { dayOfWeek: 'sun', seats: 2 , startTime: '00:00', endTime: '23:50'},
+    ],    
   };
   const availabilityPlan = defaultAvailabilityPlan;
 
