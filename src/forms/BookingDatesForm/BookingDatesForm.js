@@ -231,6 +231,15 @@ export class BookingDatesFormComponent extends Component {
           // This is the place to collect breakdown estimation data. See the
           // EstimatedBreakdownMaybe component to change the calculations
           // for customized payment processes.
+          
+          //move time too date
+          if( startDate && endDate && hourEnd && hourStart ){
+            const timeStart = hourStart.split(":");
+            const timeEnd = hourEnd.split(":");
+            startDate.date.setHours(Number(timeStart[0]),Number(timeStart[1]));
+            endDate.date.setHours(Number(timeEnd[0]),Number(timeEnd[1]));
+          }          
+
           const bookingData =
             startDate && endDate && hourEnd && hourStart
               ? {
@@ -238,15 +247,12 @@ export class BookingDatesFormComponent extends Component {
                 unitPrice,
                 startDate,
                 endDate,
-                hourStart,
-                hourEnd,
 
                 // NOTE: If unitType is `line-item/units`, a new picker
                 // for the quantity should be added to the form.
                 quantity: 1,
               } : null;
-               
-          //console.log("Mybooking: ", bookingData);
+          
           const bookingInfo = bookingData ? (
             <div className={css.priceBreakdownContainer}>
               <h3 className={css.priceBreakdownTitle}>

@@ -144,8 +144,6 @@ export class CheckoutPageComponent extends Component {
       //quantity///add
     } = this.props;
 
-    //console.log("loadInitialData: ", this.props);
-    //console.log("myLIST: ", listing);
     // Fetch currentUser with stripeCustomer entity
     // Note: since there's need for data loading in "componentWillMount" function,
     //       this is added here instead of loadData static function.
@@ -188,7 +186,6 @@ export class CheckoutPageComponent extends Component {
       const listingId = pageData.listing.id;
       const { bookingStart, bookingEnd } = pageData.bookingDates;
 
-      console.log("pageData.bookingDates: ", pageData.bookingDates)
       // Convert picked date to date that will be converted on the API as
       // a noon of correct year-month-date combo in UTC
 
@@ -231,9 +228,7 @@ export class CheckoutPageComponent extends Component {
       saveAfterOnetimePayment,
     } = handlePaymentParams;
     const storedTx = ensureTransaction(pageData.transaction);
-
-    console.log("data: ", handlePaymentParams);
-
+ 
     const ensuredCurrentUser = ensureCurrentUser(currentUser);
     const ensuredStripeCustomer = ensureStripeCustomer(ensuredCurrentUser.stripeCustomer);
     const ensuredDefaultPaymentMethod = ensurePaymentMethodCard(
@@ -255,7 +250,6 @@ export class CheckoutPageComponent extends Component {
 
     // Step 1: initiate order by requesting payment from Marketplace API
     const fnRequestPayment = fnParams => {
-      //console.log("fnParams: ",fnParams)
       // fnParams should be { listingId, bookingStart, bookingEnd }
       const hasPaymentIntents =
         storedTx.attributes.protectedData && storedTx.attributes.protectedData.stripePaymentIntents;
@@ -374,8 +368,6 @@ export class CheckoutPageComponent extends Component {
     // The way to pass it to checkout page is through pageData.bookingData
     const tx = speculatedTransaction ? speculatedTransaction : storedTx;
 
-    console.log("speculatedTransaction: ", speculatedTransaction);
-
     // Note: optionalPaymentParams contains Stripe paymentMethod,
     // but that can also be passed on Step 2
     // stripe.handleCardPayment(stripe, { payment_method: stripePaymentMethodId })
@@ -403,7 +395,6 @@ export class CheckoutPageComponent extends Component {
     }
     this.setState({ submitting: true });
 
-    //console.log("ValueSub: ", values);
     const { history, speculatedTransaction, currentUser, paymentIntent, dispatch } = this.props;
     //speculatedTransaction.quantity = 1;
     const { card, message, paymentMethod, formValues } = values;
@@ -454,11 +445,9 @@ export class CheckoutPageComponent extends Component {
       saveAfterOnetimePayment: !!saveAfterOnetimePayment,
     };
 
-    console.log("ParamL : ", requestPaymentParams);
 
     this.handlePaymentIntent(requestPaymentParams)
       .then(res => {
-        console.log("response: ", res);
         const { orderId, messageSuccess, paymentMethodSaved } = res;
         this.setState({ submitting: false });
 

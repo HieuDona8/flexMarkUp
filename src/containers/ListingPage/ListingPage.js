@@ -105,11 +105,8 @@ export class ListingPageComponent extends Component {
     listing.quantity = 1;
     
     //add time to Date
-    const { startDate, endDate, hourStart, hourEnd , ...bookingData } = values;
-    const timeStart = hourStart.split(":");
-    const timeEnd = hourEnd.split(":");
-    startDate.date.setHours(Number(timeStart[0]),Number(timeStart[1]));
-    endDate.date.setHours(Number(timeEnd[0]),Number(timeEnd[1]));
+    const { startDate, endDate, ...bookingData } = values;
+    console.log("MY New Date: ", values)
 
     const initialValues = {
       listing,

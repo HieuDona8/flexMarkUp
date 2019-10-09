@@ -55,7 +55,7 @@ const estimatedTotalPrice = (unitPrice, unitCount) => {
 // When we cannot speculatively initiate a transaction (i.e. logged
 // out), we must estimate the booking breakdown. This function creates
 // an estimated transaction object for that use case.
-const estimatedTransaction = (unitType, bookingStart, bookingEnd, unitPrice, quantity, hourStart, hourEnd) => {
+const estimatedTransaction = (unitType, bookingStart, bookingEnd, unitPrice, quantity) => {
 
 
   const now = new Date();
@@ -135,17 +135,20 @@ const estimatedTransaction = (unitType, bookingStart, bookingEnd, unitPrice, qua
 };
 
 const EstimatedBreakdownMaybe = props => {
-  const { unitType, unitPrice, startDate, endDate, quantity, hourStart, hourEnd } = props.bookingData;
+  const { unitType, unitPrice, startDate, endDate, quantity } = props.bookingData;
   //check typeUnit: units?
   const isUnits = unitType === LINE_ITEM_UNITS;
   const quantityIfUsingUnits = !isUnits || Number.isInteger(quantity);
-  const canEstimatePrice = hourStart && hourEnd && startDate && endDate && unitPrice && quantityIfUsingUnits;
+  const canEstimatePrice = startDate && endDate && unitPrice && quantityIfUsingUnits;
   if (!canEstimatePrice) {
     return null;
   }
 
-  const tx = estimatedTransaction(unitType, startDate.date, endDate.date, unitPrice, quantity, hourStart, hourEnd);
-  
+  console.log("props.bookingData: ", props.bookingData);
+  const tx = estimatedTransaction(unitType, startDate.date, endDate.date, unitPrice, quantity);
+
+  console.log("myTIME: ", tx);
+
   return (
     <BookingBreakdown
       className={css.receipt}

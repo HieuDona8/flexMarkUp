@@ -170,8 +170,32 @@ export const stripeCustomerError = e => ({
 
 /* ================ Thunks ================ */
 
-export const initiateOrder = (orderParams, transactionId) => (dispatch, getState, sdk) => {
+export const initiateOrder = (orderParams, transactionId) => async(dispatch, getState, sdk) => {
   dispatch(initiateOrderRequest());
+
+  let typeBooking = TRANSITION_REQUEST_FIRST_TIME;
+  await sdk.transactions.query({
+    only: "order",
+    lastTransitions: [
+      TRANSITION_REQUEST_FIRST_TIME, 
+      TRANSITION_REQUEST, 
+      TRANSITION_CONFIRM_PAYMENT,
+      TRANSITION_ACCEPT,
+      TRANSITION_COMPLETE,
+      TRANSITION_REVIEW_1_BY_CUSTOMER,
+      TRANSITION_REVIEW_1_BY_PROVIDER,
+      TRANSITION_REVIEW_2_BY_CUSTOMER,
+      TRANSITION_REVIEW_2_BY_PROVIDER,
+      TRANSITION_EXPIRE_CUSTOMER_REVIEW_PERIOD,
+      TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD,
+      TRANSITION_EXPIRE_REVIEW_PERIOD,
+    ]
+  }).then(res => {
+    if(res.data.data.length > 0){      
+      typeBooking = TRANSITION_REQUEST;
+    }
+  });
+
   const bodyParams = transactionId
     ? {
         id: transactionId,
@@ -180,8 +204,7 @@ export const initiateOrder = (orderParams, transactionId) => (dispatch, getState
       }
     : {
         processAlias: config.bookingProcessAlias,
-        //transition: TRANSITION_REQUEST_PAYMENT,
-        transition: TRANSITION_REQUEST_FIRST_TIME,
+        transition: typeBooking,
         params: orderParams,
       };
   const queryParams = {
@@ -272,7 +295,6 @@ export const sendMessage = params => (dispatch, getState, sdk) => {
  * the price with the chosen information.
  */
 export const speculateTransaction = params => async(dispatch, getState, sdk) => {
-  console.log("myPAGRAM: ", params);
   let typeBooking = TRANSITION_REQUEST_FIRST_TIME;
   //check first booking
   await sdk.transactions.query({
@@ -292,7 +314,7 @@ export const speculateTransaction = params => async(dispatch, getState, sdk) => 
       TRANSITION_EXPIRE_REVIEW_PERIOD,
     ]
   }).then(res => {
-    console.log("check first: ", res.data.data.length);
+    console.log("TIMEBOOKING: ", res.data.data.length);
     if(res.data.data.length > 0){      
       typeBooking = TRANSITION_REQUEST;
     }
@@ -311,6 +333,7 @@ export const speculateTransaction = params => async(dispatch, getState, sdk) => 
     },
   };
 
+
   const queryParams = {
     include: ['booking', 'provider'],
     expand: true,
@@ -321,7 +344,6 @@ export const speculateTransaction = params => async(dispatch, getState, sdk) => 
       bodyParams, queryParams
     )
     .then(response => {
-      console.log("respon: ", response)
       const entities = denormalisedResponseEntities(response);
       if (entities.length !== 1) {
         throw new Error('Expected a resource in the sdk.transactions.initiateSpeculative response');
