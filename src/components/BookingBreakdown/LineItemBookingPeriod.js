@@ -58,7 +58,7 @@ const BookingPeriod = props => {
 
 const LineItemBookingPeriod = props => {
   const { booking, unitType, dateType } = props;
-
+  
   // Attributes: displayStart and displayEnd can be used to differentiate shown time range
   // from actual start and end times used for availability reservation. It can help in situations
   // where there are preparation time needed between bookings.

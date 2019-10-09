@@ -27,7 +27,7 @@ const EditListingAvailabilityPanel = props => {
   const currentListing = ensureOwnListing(listing);
   const isPublished = currentListing.id && currentListing.attributes.state !== LISTING_STATE_DRAFT;
   const defaultAvailabilityPlan = {
-    type: 'availability-plan/time',
+    type: 'availability-plan/day',
     timezone: 'Asia/Ho_Chi_Minh',
     entries: [
       { dayOfWeek: 'mon', seats: 2 , startTime: '00:00', endTime: '23:30'},
@@ -41,8 +41,6 @@ const EditListingAvailabilityPanel = props => {
   };
   const availabilityPlan = defaultAvailabilityPlan;
 
-  //
-  //
   return (
     <div className={classes}>
       <h1 className={css.title}>

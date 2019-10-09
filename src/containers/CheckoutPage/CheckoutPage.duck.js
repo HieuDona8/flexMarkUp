@@ -314,7 +314,6 @@ export const speculateTransaction = params => async(dispatch, getState, sdk) => 
       TRANSITION_EXPIRE_REVIEW_PERIOD,
     ]
   }).then(res => {
-    console.log("TIMEBOOKING: ", res.data.data.length);
     if(res.data.data.length > 0){      
       typeBooking = TRANSITION_REQUEST;
     }

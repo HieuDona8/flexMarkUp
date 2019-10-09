@@ -406,8 +406,7 @@ export class CheckoutPageComponent extends Component {
       city,
       state,
       country,
-      saveAfterOnetimePayment,
-      //quantity //add quqntity
+      saveAfterOnetimePayment,      
     } = formValues;
 
     // Billing address is recommended.

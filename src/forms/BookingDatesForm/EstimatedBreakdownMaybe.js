@@ -57,7 +57,6 @@ const estimatedTotalPrice = (unitPrice, unitCount) => {
 // an estimated transaction object for that use case.
 const estimatedTransaction = (unitType, bookingStart, bookingEnd, unitPrice, quantity) => {
 
-
   const now = new Date();
   const isNightly = unitType === LINE_ITEM_NIGHT;
   const isDaily = unitType === LINE_ITEM_DAY;
@@ -144,10 +143,8 @@ const EstimatedBreakdownMaybe = props => {
     return null;
   }
 
-  console.log("props.bookingData: ", props.bookingData);
   const tx = estimatedTransaction(unitType, startDate.date, endDate.date, unitPrice, quantity);
 
-  console.log("myTIME: ", tx);
 
   return (
     <BookingBreakdown
