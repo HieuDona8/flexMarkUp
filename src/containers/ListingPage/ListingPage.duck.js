@@ -5,7 +5,21 @@ import { types as sdkTypes } from '../../util/sdkLoader';
 import { storableError } from '../../util/errors';
 import { addMarketplaceEntities } from '../../ducks/marketplaceData.duck';
 import { denormalisedResponseEntities } from '../../util/data';
-import { TRANSITION_ENQUIRE } from '../../util/transaction';
+import { 
+  TRANSITION_ENQUIRE,
+  TRANSITION_REQUEST_FIRST_TIME, 
+  TRANSITION_REQUEST, 
+  TRANSITION_CONFIRM_PAYMENT,
+  TRANSITION_ACCEPT,
+  TRANSITION_COMPLETE,
+  TRANSITION_REVIEW_1_BY_CUSTOMER,
+  TRANSITION_REVIEW_1_BY_PROVIDER,
+  TRANSITION_REVIEW_2_BY_CUSTOMER,
+  TRANSITION_REVIEW_2_BY_PROVIDER,
+  TRANSITION_EXPIRE_CUSTOMER_REVIEW_PERIOD,
+  TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD,
+  TRANSITION_EXPIRE_REVIEW_PERIOD,
+} from '../../util/transaction';
 import {
   LISTING_PAGE_DRAFT_VARIANT,
   LISTING_PAGE_PENDING_APPROVAL_VARIANT,
@@ -287,3 +301,30 @@ export const loadData = (params, search) => dispatch => {
     return Promise.all([dispatch(showListing(listingId)), dispatch(fetchReviews(listingId))]);
   }
 };
+
+export const isFirstBooking =() => async(dispatch, getState, sdk) =>{
+  let isFirst = false;
+  await sdk.transactions.query({
+    only: "order",
+    lastTransitions: [
+      TRANSITION_REQUEST_FIRST_TIME, 
+      TRANSITION_REQUEST, 
+      TRANSITION_CONFIRM_PAYMENT,
+      TRANSITION_ACCEPT,
+      TRANSITION_COMPLETE,
+      TRANSITION_REVIEW_1_BY_CUSTOMER,
+      TRANSITION_REVIEW_1_BY_PROVIDER,
+      TRANSITION_REVIEW_2_BY_CUSTOMER,
+      TRANSITION_REVIEW_2_BY_PROVIDER,
+      TRANSITION_EXPIRE_CUSTOMER_REVIEW_PERIOD,
+      TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD,
+      TRANSITION_EXPIRE_REVIEW_PERIOD,
+    ]
+  }).then(res => {   
+    if(res.data.data.length === 0){
+      isFirst = true;
+    }
+  });
+  
+  return isFirst;
+}

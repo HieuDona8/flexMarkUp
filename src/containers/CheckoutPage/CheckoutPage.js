@@ -140,8 +140,7 @@ export class CheckoutPageComponent extends Component {
       transaction,
       fetchSpeculatedTransaction,
       fetchStripeCustomer,
-      history,
-      //quantity///add
+      history,      
     } = this.props;
 
     // Fetch currentUser with stripeCustomer entity
@@ -200,9 +199,7 @@ export class CheckoutPageComponent extends Component {
         listingId,
         bookingStart,
         bookingEnd,
-        quantity: 1,
-        // seats: 1,
-        // units: 1
+        quantity: 1,        
       });
     }
 
@@ -382,7 +379,7 @@ export class CheckoutPageComponent extends Component {
       listingId: pageData.listing.id,
       bookingStart: tx.booking.attributes.start,
       bookingEnd: tx.booking.attributes.end,
-      quantity: 1,///overthere
+      quantity: 1,
       ...optionalPaymentParams,
     };
 

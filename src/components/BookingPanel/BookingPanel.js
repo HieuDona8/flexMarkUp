@@ -65,8 +65,10 @@ const BookingPanel = props => {
     history,
     location,
     intl,
+    isFirstBooking,
   } = props;
 
+  
 
   const price = listing.attributes.price;
   const hasListingState = !!listing.attributes.state;
@@ -126,6 +128,7 @@ const BookingPanel = props => {
             isOwnListing={isOwnListing}
             timeSlots={timeSlots}
             fetchTimeSlotsError={fetchTimeSlotsError}
+            isFirstBooking={isFirstBooking}
           />
         ) : null}
       </ModalInMobile>

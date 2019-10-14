@@ -55,8 +55,9 @@ const estimatedTotalPrice = (unitPrice, unitCount) => {
 // When we cannot speculatively initiate a transaction (i.e. logged
 // out), we must estimate the booking breakdown. This function creates
 // an estimated transaction object for that use case.
-const estimatedTransaction = (unitType, bookingStart, bookingEnd, unitPrice, quantity) => {
+const estimatedTransaction = (unitType, bookingStart, bookingEnd, unitPrice, quantity, isFirstBooking) => {
 
+  const bookingType = isFirstBooking ? TRANSITION_REQUEST_FIRST_TIME : TRANSITION_REQUEST;
   const now = new Date();
   const isNightly = unitType === LINE_ITEM_NIGHT;
   const isDaily = unitType === LINE_ITEM_DAY;
@@ -70,7 +71,7 @@ const estimatedTransaction = (unitType, bookingStart, bookingEnd, unitPrice, qua
   //count day or night or time
   //minutesBetween
   const totalPrice = estimatedTotalPrice(unitPrice, unitCount);
- 
+
   // bookingStart: "Fri Mar 30 2018 12:00:00 GMT-1100 (SST)" aka "Fri Mar 30 2018 23:00:00 GMT+0000 (UTC)"
   // Server normalizes night/day bookings to start from 00:00 UTC aka "Thu Mar 29 2018 13:00:00 GMT-1100 (SST)"
   // The result is: local timestamp.subtract(12h).add(timezoneoffset) (in eg. -23 h)
@@ -83,16 +84,9 @@ const estimatedTransaction = (unitType, bookingStart, bookingEnd, unitPrice, qua
   );
   const serverDayEnd = dateFromLocalToAPI(
     moment(bookingEnd)
-      .startOf('day')
-      .toDate()
+      .startOf('day') //set 12am today
+      .toDate() //returns an invalid Date object
   );
-
-  //lay ID cua client
-  //kiem tra lan dau booking
-  //const sdk = sharetribeSdk.createInstance({
-    //clientId: '<Your Client ID here>'
-  //});
-
 
   return {
     id: new UUID('estimated-transaction'),
@@ -101,7 +95,7 @@ const estimatedTransaction = (unitType, bookingStart, bookingEnd, unitPrice, qua
       createdAt: now,
       lastTransitionedAt: now,
       processVersion: 10,
-      lastTransition: TRANSITION_REQUEST_FIRST_TIME,
+      lastTransition: bookingType,
       payinTotal: totalPrice,
       payoutTotal: totalPrice,
       lineItems: [
@@ -118,7 +112,7 @@ const estimatedTransaction = (unitType, bookingStart, bookingEnd, unitPrice, qua
         {
           createdAt: now,
           by: TX_TRANSITION_ACTOR_CUSTOMER,
-          transition: TRANSITION_REQUEST_FIRST_TIME,//requiest first time
+          transition: bookingType,//requiest first time or requiest
         },
       ],
     },
@@ -128,12 +122,15 @@ const estimatedTransaction = (unitType, bookingStart, bookingEnd, unitPrice, qua
       attributes: {
         start: serverDayStart,
         end: serverDayEnd,
+        displayStart: bookingStart,
+        displayEnd: bookingEnd,
       },
     },
   };
 };
 
 const EstimatedBreakdownMaybe = props => {
+  const { isFirstBooking } = props;
   const { unitType, unitPrice, startDate, endDate, quantity } = props.bookingData;
   //check typeUnit: units?
   const isUnits = unitType === LINE_ITEM_UNITS;
@@ -143,9 +140,7 @@ const EstimatedBreakdownMaybe = props => {
     return null;
   }
 
-  const tx = estimatedTransaction(unitType, startDate.date, endDate.date, unitPrice, quantity);
-
-
+  const tx = estimatedTransaction(unitType, startDate.date, endDate.date, unitPrice, quantity, isFirstBooking);
   return (
     <BookingBreakdown
       className={css.receipt}
@@ -155,6 +150,8 @@ const EstimatedBreakdownMaybe = props => {
       booking={tx.booking}
     />
   );
+
+  
 };
 
 export default EstimatedBreakdownMaybe;

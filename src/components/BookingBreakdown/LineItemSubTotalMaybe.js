@@ -47,6 +47,9 @@ const nonCommissionNonReversalLineItems = transaction => {
  * a given user role.
  */
 const txHasCommission = (transaction, userRole) => {
+
+  console.log("transaction: ", transaction);
+  console.log("userRole: ", userRole);
   let commissionLineItem = null;
 
   if (userRole === 'customer') {
@@ -58,6 +61,8 @@ const txHasCommission = (transaction, userRole) => {
       item => item.code === LINE_ITEM_PROVIDER_COMMISSION
     );
   }
+
+  console.log("commissionLineItem: ", commissionLineItem)
   return !!commissionLineItem;
 };
 
@@ -73,11 +78,15 @@ const LineItemSubTotalMaybe = props => {
   // line item types than the defined unit type (e.g. week, month, year).
   const showSubTotal = txHasCommission(transaction, userRole) || refund;
 
+  //console.log("txHasCommission(transaction, userRole): ", transaction);
+  
   // all non-reversal, non-commission line items
   const subTotalLineItems = nonCommissionNonReversalLineItems(transaction);
   // line totals of those line items combined
   const subTotal = lineItemsTotal(subTotalLineItems);
 
+  //console.log("subTotalLineItems", subTotalLineItems);
+  //console.log("formatMoney(intl, subTotal):  ", formatMoney(intl, subTotal))
   const formattedSubTotal = subTotalLineItems.length > 0 ? formatMoney(intl, subTotal) : null;
 
   return formattedSubTotal && showSubTotal ? (

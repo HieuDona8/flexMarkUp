@@ -8,7 +8,8 @@
 }
 
 .inputSuccess {
-  border-bottom-color: var(--successColor);
+  border-bottom-color: var(--attentionColorBottom);
+  border-bottom-width: 3px;
 }
 
 .inputError {

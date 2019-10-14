@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { string, bool, arrayOf } from 'prop-types';
 import { compose } from 'redux';
+import { daysBetween } from '../../util/dates';
 import { Form as FinalForm } from 'react-final-form';
 import { FormattedMessage, intlShape, injectIntl } from '../../util/reactIntl';
 import classNames from 'classnames';
@@ -9,8 +10,9 @@ import { required, bookingDatesRequired, composeValidators } from '../../util/va
 import { START_DATE, END_DATE, START_HOUR, END_HOUR } from '../../util/dates';
 import { propTypes } from '../../util/types';
 import config from '../../config';
-import { Form, PrimaryButton, FieldDateRangeInput, FieldSelect, FieldDateInput } from '../../components';
+import { Form, PrimaryButton, FieldDateRangeInput, FieldSelect, FieldDateInput, FieldTextInput } from '../../components';
 import EstimatedBreakdownMaybe from './EstimatedBreakdownMaybe';
+
 
 import css from './BookingDatesForm.css';
 
@@ -61,7 +63,7 @@ export class BookingDatesFormComponent extends Component {
   }
 
   render() {
-    const { rootClassName, className, price: unitPrice, ...rest } = this.props;
+    const { rootClassName, className, price: unitPrice, isFirstBooking, ...rest } = this.props;
     const classes = classNames(rootClassName || css.root, className);
 
     if (!unitPrice) {
@@ -105,50 +107,47 @@ export class BookingDatesFormComponent extends Component {
             fetchTimeSlotsError,
             form
           } = fieldRenderProps;
-          const { startDate, endDate, hourStart, hourEnd } = values && values.startDate && values.hourStart && values.hourEnd ? values : {};
-
-                    
-          ///////////////
+          const { startDate, endDate, hourStart, hourEnd, numberPerson} = values && values.startDate && values.hourStart && values.hourEnd ? values : {};
+          
           // EDIT DATE
           //INPUT startDate FIRST (don't have endDate)
           if(values.startDate && !values.endDate){
             form.change("endDate", { date: new Date(moment(values.startDate.date).add(1, "days")) });
-            this.startValue = moment(values.startDate.date).diff(moment(), "days")
+            this.startValue = moment(values.startDate.date).diff(moment(), "days");                        
           }
 
-          
-          
           //INPUT endDay FIRST
           if (!values.startDate && values.endDate) {
             //nếu endDay <= curent => reset startDay và endDay else startDay < endDay 1 ngày
             if (moment(values.endDate.date).diff(moment(), "days") <= 0) {
               form.change("startDate", { date: new Date(moment()) });
-              form.change("endDate", { date: new Date(moment().add(1, "days")) });
-              this.startValue = moment(values.startDate.date).diff(moment(), "days")
+              form.change("endDate", { date: new Date(moment().add(1, "days")) });      
+              //this.startValue = moment(values.startDate.date).diff(moment(), "days")
+              //values.endDate is still curent day:
+              this.startValue = moment(values.endDate.date).diff(moment(), "days");              
             } else {
-              //subtract 1 day form endDate
+              //subtract 1 day form endDate to startDay
               form.change("startDate", { date: new Date(moment(values.endDate.date).subtract(1, "days")) });
-              this.startValue = moment(values.endDate.date).subtract(1, "days").diff(moment(), "days");              
+              this.startValue = moment(values.endDate.date).subtract(1, "days").diff(moment(), "days");                           
             }
           }
 
-          //NOT update HAVE startDate, endDate AND start - end =>0; = 0 BECAUSE booking theo time
+          //NOT update HAVE startDate, endDate AND start - end =>0; = 0 BECAUSE booking by time
           if (values.startDate && values.endDate && moment(values.startDate.date).diff(moment(values.endDate.date), "days") > 0) {
             const myStarCur = moment(values.startDate.date).diff(moment(), "days");
             //end lùi cập nhật start
             if(myStarCur === this.startValue){
               form.change("startDate", { date: new Date(moment(values.endDate.date)) });
-              this.startValue = moment(values.startDate.date).diff(moment(), "days")
+              this.startValue = moment(values.startDate.date).diff(moment(), "days")              
             } else{
               //start tiến cập nhật end
               form.change("endDate", { date: new Date(moment(values.startDate.date).add(1, "days")) });
-              this.startValue = moment(values.startDate.date).diff(moment(), "days");
+              this.startValue = moment(values.startDate.date).diff(moment(), "days");              
             }
           }
 
 
-
-          //////EIDT TIME///////////////////////          
+          //EIDT TIME
           const hourStartPlaceholder = intl.formatMessage({ id: 'BookingDatesForm.hourStartPlaceholder' });
           const HOUR_FORMAT = 'hh:mm a';         
 
@@ -205,15 +204,13 @@ export class BookingDatesFormComponent extends Component {
             }
             return options;
           };
-
-
-          //////////////////////////////
+          
           //config lable
           const bookingStartLabel = intl.formatMessage({ id: 'BookingDatesForm.bookingStartTitle' });
           const bookingEndLabel = intl.formatMessage({ id: 'BookingDatesForm.bookingEndTitle' });
           const bookingTimeStartLabel = intl.formatMessage({ id: 'BookingDatesForm.bookingTimeStartTitle' });
           const bookingTimeEndLabel = intl.formatMessage({ id: 'BookingDatesForm.bookingTimeEndTitle' });
-
+          const bookingNumberPerson = intl.formatMessage({ id: 'BookingDatesForm.bookingNumberPerson' });
 
           const requiredMessage = intl.formatMessage({ id: 'BookingDatesForm.requiredDate' });
           const startDateErrorMessage = intl.formatMessage({
@@ -231,34 +228,60 @@ export class BookingDatesFormComponent extends Component {
           // This is the place to collect breakdown estimation data. See the
           // EstimatedBreakdownMaybe component to change the calculations
           // for customized payment processes.
-          
-          //move time too date
-          if( startDate && endDate && hourEnd && hourStart ){
+
+          //the same day but time
+          if(startDate && endDate && hourStart && hourEnd){      
+            const timeStart = hourStart.split(":");
+            const timeEnd = hourEnd.split(":");
+            if(moment(startDate.date).diff(moment(endDate.date), "days") === 0 && (timeStart[0] > timeEnd[0] || ( timeStart[0] === timeEnd[0] && timeStart[1] > timeEnd[1]))){
+              const timeStart = hourStart.split(":");
+              const hour = (parseInt(timeStart[0])+1).toString();
+              const hourValue = hour.length === 2 ? hour +":"+ timeStart[1] : "0" + hour + ":" + timeStart[1];
+              form.change("hourEnd", hourValue);
+            }
+          }
+
+          //set time of day => 0
+          if( startDate && endDate ){          
+            startDate.date.setHours("00","00");
+            endDate.date.setHours("00","00");
+          }
+          //get timeDate
+          const timeDiff = startDate && endDate ? moment(endDate.date).diff(moment(startDate.date)) : null;
+          const timeDuration = timeDiff || timeDiff === 0 ? moment.duration(timeDiff) : null;          
+          //get time          
+          const timeEnd = hourEnd ? hourEnd.split(":") : null;
+          const timeAddDay = timeEnd && (timeEnd[0] > 0 || timeEnd[1] > 0) ? true : false;        
+          //get day:
+          const days = timeDuration ? timeAddDay ? timeDuration.get("days") + 1 : timeDuration.get("days")  : null;           
+          //daysBetween(startDate.date, endDate.date) : null;
+          const quantity = numberPerson && days ? numberPerson*days : null;          
+          //move time too date          
+          if( quantity ){
             const timeStart = hourStart.split(":");
             const timeEnd = hourEnd.split(":");
             startDate.date.setHours(Number(timeStart[0]),Number(timeStart[1]));
             endDate.date.setHours(Number(timeEnd[0]),Number(timeEnd[1]));
-          }          
+          }
 
           const bookingData =
-            startDate && endDate && hourEnd && hourStart
+            quantity
               ? {
                 unitType,
                 unitPrice,
-                startDate,
+                startDate, 
                 endDate,
 
                 // NOTE: If unitType is `line-item/units`, a new picker
                 // for the quantity should be added to the form.
-                quantity: 1,
-              } : null;
-          
+                quantity,
+              } : null;                    
           const bookingInfo = bookingData ? (
             <div className={css.priceBreakdownContainer}>
               <h3 className={css.priceBreakdownTitle}>
                 <FormattedMessage id="BookingDatesForm.priceBreakdownTitle" />
               </h3>
-              <EstimatedBreakdownMaybe bookingData={bookingData} />
+              <EstimatedBreakdownMaybe bookingData={bookingData} isFirstBooking={isFirstBooking}/>
             </div>
           ) : null;
           
@@ -339,6 +362,16 @@ export class BookingDatesFormComponent extends Component {
                     </option>
                     {generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: 23, minute: 30 })}
                   </FieldSelect>                                           
+                </div>
+                <div className={css.numberPerson}>
+                  <FieldTextInput
+                    className={css.numberPersonContent}
+                    id={"numberPerson"}
+                    label={bookingNumberPerson}
+                    name="numberPerson"                    
+                    type="number"
+                    placeholder="0"
+                  />
                 </div>
               </div>
 

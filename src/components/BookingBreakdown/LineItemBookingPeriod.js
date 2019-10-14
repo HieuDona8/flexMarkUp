@@ -8,21 +8,22 @@ import css from './BookingBreakdown.css';
 
 const BookingPeriod = props => {
   const { startDate, endDate, dateType } = props;
-
+  console.log("dateType === DATE_TYPE_DATE", dateType === DATE_TYPE_DATE );
   const timeFormatOptions =
     dateType === DATE_TYPE_DATE
       ? {
-          weekday: 'long',
+          weekday: 'long', //weekday: 'short',
         }
       : {
-          weekday: 'short',
+          //weekday: 'numeric',
           hour: 'numeric',
           minute: 'numeric',
         };
 
   const dateFormatOptions = {
-    month: 'short',
     day: 'numeric',
+    month: 'numeric',//month: 'short','long'
+    year: 'numberic'
   };
 
   return (
@@ -59,6 +60,7 @@ const BookingPeriod = props => {
 const LineItemBookingPeriod = props => {
   const { booking, unitType, dateType } = props;
   
+  console.log("MMM: ", props);
   // Attributes: displayStart and displayEnd can be used to differentiate shown time range
   // from actual start and end times used for availability reservation. It can help in situations
   // where there are preparation time needed between bookings.
@@ -68,8 +70,9 @@ const LineItemBookingPeriod = props => {
   const localEndDateRaw = dateFromAPIToLocalNoon(displayEnd || end);
 
   const isNightly = unitType === LINE_ITEM_NIGHT;
-  const endDay = isNightly ? localEndDateRaw : moment(localEndDateRaw).subtract(1, 'days');
-
+  //const endDay = isNightly ? localEndDateRaw : moment(localEndDateRaw).subtract(1, 'days');
+  const endDay = localEndDateRaw;
+  
   return (
     <>
       <div className={css.lineItem}>

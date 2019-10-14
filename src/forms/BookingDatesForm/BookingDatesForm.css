@@ -99,13 +99,18 @@
   display: flex;
   justify-content: space-between;
   flex-direction: row;
+  margin-bottom: 8px;
+}
+
+.numberPerson{
+  margin-bottom: 8px;
 }
 
 .dateBook, .hourBook{
   flex-basis: 45%;
 }
 
-.dateBook > label, .hourBook > label{
+.dateBook > label, .hourBook > label, .numberPersonContent > label{
   color: var(--marketplaceColorLabel);
 }
 
