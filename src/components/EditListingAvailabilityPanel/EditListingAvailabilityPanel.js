@@ -40,7 +40,6 @@ const EditListingAvailabilityPanel = props => {
     ],    
   };
   
-  console.log("TEST::", currentListing.attributes);
   const availabilityPlan = defaultAvailabilityPlan;
   //const availabilityPlan = defaultAvailabilityPlan;
 

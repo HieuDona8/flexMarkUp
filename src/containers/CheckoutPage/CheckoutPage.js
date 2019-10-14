@@ -54,6 +54,7 @@ import {
   sendMessage,
 } from './CheckoutPage.duck';
 import { storeData, storedData, clearData } from './CheckoutPageSessionHelpers';
+import moment from 'moment';
 import css from './CheckoutPage.css';
 
 const STORAGE_KEY = 'CheckoutPage';
@@ -194,12 +195,31 @@ export class CheckoutPageComponent extends Component {
       // Fetch speculated transaction for showing price in booking breakdown
       // NOTE: if unit type is line-item/units, quantity needs to be added.
       // The way to pass it to checkout page is through pageData.bookingData
+      
+      //quantity
+      const { hourEnd, numberPerson } = pageData.bookingData;
+      //copy dates:
+      const startDate = new Date(bookingStart);
+      const endDate = new Date(bookingEnd);
+      if( startDate && endDate ){
+        startDate.setHours(0,0);
+        endDate.setHours(0,0);
+      }
+      //get timeDate
+      const timeDiff = startDate && endDate ? moment(endDate).diff(moment(startDate)) : null;
+      const timeDuration = timeDiff || timeDiff === 0 ? moment.duration(timeDiff) : null;          
+      //get time          
+      const timeEnd = hourEnd ? hourEnd.split(":") : null;
+      const timeAddDay = timeEnd && (timeEnd[0] > 0 || timeEnd[1] > 0) ? true : false;        
+      //get day:
+      const days = timeDuration ? timeAddDay ? timeDuration.get("days") + 1 : timeDuration.get("days")  : null;                 
+      const quantity = numberPerson && days ? numberPerson*days : null;
 
       fetchSpeculatedTransaction({
         listingId,
         bookingStart,
         bookingEnd,
-        quantity: 1,        
+        quantity
       });
     }
 

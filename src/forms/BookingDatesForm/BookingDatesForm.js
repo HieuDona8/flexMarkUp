@@ -7,7 +7,7 @@ import { FormattedMessage, intlShape, injectIntl } from '../../util/reactIntl';
 import classNames from 'classnames';
 import moment from 'moment';
 import { required, bookingDatesRequired, composeValidators } from '../../util/validators';
-import { START_DATE, END_DATE, START_HOUR, END_HOUR } from '../../util/dates';
+import { START_DATE, END_DATE, START_HOUR, END_HOUR, NUMBER_PERSON } from '../../util/dates';
 import { propTypes } from '../../util/types';
 import config from '../../config';
 import { Form, PrimaryButton, FieldDateRangeInput, FieldSelect, FieldDateInput, FieldTextInput } from '../../components';
@@ -39,8 +39,7 @@ export class BookingDatesFormComponent extends Component {
   // focus on that input, otherwise continue with the
   // default handleSubmit function.
   handleFormSubmit(e) {
-    const { startDate, endDate, hourStart, hourEnd } = e || {};    
-
+    const { startDate, endDate, hourStart, hourEnd, numberPerson } = e || {};
     if (!startDate) {
       //e.preventDefault();      
       this.setState({ focusedInput: START_DATE });
@@ -57,7 +56,11 @@ export class BookingDatesFormComponent extends Component {
       //e.preventDefault();
       this.setState({ focusedInput: END_HOUR });
       return false;
-    } else {
+    } else if (!numberPerson) {
+      //e.preventDefault();
+      this.setState({ focusedInput: NUMBER_PERSON });
+      return false;
+    }else {
       this.props.onSubmit(e);
     }
   }
@@ -241,6 +244,7 @@ export class BookingDatesFormComponent extends Component {
             }
           }
 
+          //quantity
           //set time of day => 0
           if( startDate && endDate ){          
             startDate.date.setHours("00","00");
@@ -306,9 +310,7 @@ export class BookingDatesFormComponent extends Component {
           );
 
           const classDate = classNames(css.dateBook, css.specialBook)
-
-          
-
+    
           return (
             <Form onSubmit={handleSubmit} className={classes}>
               {timeSlotsError}
