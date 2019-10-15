@@ -247,8 +247,8 @@ export class BookingDatesFormComponent extends Component {
           //quantity
           //set time of day => 0
           if( startDate && endDate ){          
-            startDate.date.setHours("00","00");
-            endDate.date.setHours("00","00");
+            startDate.date.setHours(0,0);
+            endDate.date.setHours(0,0);
           }
           //get timeDate
           const timeDiff = startDate && endDate ? moment(endDate.date).diff(moment(startDate.date)) : null;

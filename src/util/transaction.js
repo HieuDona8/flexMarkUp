@@ -266,6 +266,9 @@ export const txIsCanceled = tx =>
 export const txIsDelivered = tx =>
   getTransitionsToState(STATE_DELIVERED).includes(txLastTransition(tx));
 
+export const txIsAfter48hour = tx =>
+  getTransitionsToState(STATE_AFTER_48_HOURS).includes(txLastTransition(tx));
+  
 const firstReviewTransitions = [
   ...getTransitionsToState(STATE_REVIEWED_BY_CUSTOMER),
   ...getTransitionsToState(STATE_REVIEWED_BY_PROVIDER),

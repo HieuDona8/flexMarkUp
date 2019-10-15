@@ -39,6 +39,8 @@ import DetailCardHeadingsMaybe from './DetailCardHeadingsMaybe';
 import DetailCardImage from './DetailCardImage';
 import FeedSection from './FeedSection';
 import SaleActionButtonsMaybe from './SaleActionButtonsMaybe';
+import CancelActionButtonMaybe from './CancelActionButtonMaybe';
+import DeclineActionButtonMaybe from './DeclineActionButtonMaybe';
 import PanelHeading, {
   HEADING_ENQUIRED,
   HEADING_PAYMENT_PENDING,
@@ -183,10 +185,13 @@ export class TransactionPanelComponent extends Component {
       intl,
       onAcceptSale,
       onDeclineSale,
+      onCancelSale,
       acceptInProgress,
       declineInProgress,
+      cancelInProgress,
       acceptSaleError,
       declineSaleError,
+      cancelSaleError,
       onSubmitBookingRequest,
       timeSlots,
       fetchTimeSlotsError,
@@ -194,6 +199,7 @@ export class TransactionPanelComponent extends Component {
     } = this.props;
 
     const currentTransaction = ensureTransaction(transaction);
+
     const currentListing = ensureListing(currentTransaction.listing);
     const currentProvider = ensureUser(currentTransaction.provider);
     const currentCustomer = ensureUser(currentTransaction.customer);
@@ -237,17 +243,19 @@ export class TransactionPanelComponent extends Component {
           headingState: HEADING_REQUESTED,
           showDetailCardHeadings: isCustomer,
           showSaleButtons: isProvider && !isCustomerBanned,
+          showDeclineButtons: isCustomer && !isProviderBanned,
         };
       } else if (txIsAccepted(tx)) {
         return {
           headingState: HEADING_ACCEPTED,
           showDetailCardHeadings: isCustomer,
           showAddress: isCustomer,
+          showCancelButtons: isProvider || isCustomer,
         };
       } else if (txIsDeclined(tx)) {
         return {
           headingState: HEADING_DECLINED,
-          showDetailCardHeadings: isCustomer,
+          showDetailCardHeadings: isCustomer,          
         };
       } else if (txIsCanceled(tx)) {
         return {
@@ -310,6 +318,23 @@ export class TransactionPanelComponent extends Component {
         declineSaleError={declineSaleError}
         onAcceptSale={() => onAcceptSale(currentTransaction.id)}
         onDeclineSale={() => onDeclineSale(currentTransaction.id)}
+      />
+    );
+
+    const cancelButton = (
+      <CancelActionButtonMaybe
+        showButtons={stateData.showCancelButtons}
+        cancelInProgress={cancelInProgress}        
+        cancelSaleError={cancelSaleError}        
+        onCancelSale={() => onCancelSale(currentTransaction.id, isCustomer, currentTransaction)}
+      />
+    );
+
+    const declineButton = (
+      <DeclineActionButtonMaybe
+        showButtons={stateData.showDeclineButtons}
+        declineSaleError={declineSaleError}
+        onDeclineSale={() => onDeclineSale(currentTransaction.id, isCustomer)}
       />
     );
 
@@ -451,9 +476,18 @@ export class TransactionPanelComponent extends Component {
                 transaction={currentTransaction}
                 transactionRole={transactionRole}
               />
-
               {stateData.showSaleButtons ? (
                 <div className={css.desktopActionButtons}>{saleButtons}</div>
+              ) : null}
+              {stateData.showCancelButtons ?(
+                <div>
+                  <div className={css.desktopActionButtons}>{cancelButton}</div>
+                </div>
+              ) : null}
+              {stateData.showDeclineButtons ?(
+                <div>
+                  <div className={css.desktopActionButtons}>{declineButton}</div>
+                </div>
               ) : null}
             </div>
           </div>
@@ -519,6 +553,7 @@ TransactionPanelComponent.propTypes = {
   // Sale related props
   onAcceptSale: func.isRequired,
   onDeclineSale: func.isRequired,
+  onCancelSale: func.isRequired,
   acceptInProgress: bool.isRequired,
   declineInProgress: bool.isRequired,
   acceptSaleError: propTypes.error,

@@ -913,6 +913,7 @@
   "TransactionPanel.bookingBreakdownTitle": "Booking breakdown",
   "TransactionPanel.customerBannedStatus": "The user made the request, but was later banned.",
   "TransactionPanel.declineButton": "Decline",
+  "TransactionPanel.cancelButton": "Cancel",
   "TransactionPanel.declineSaleFailed": "Oops, declining failed. Please try again.",
   "TransactionPanel.deletedListingOrderTitle": "a listing",
   "TransactionPanel.deletedListingTitle": "Deleted listing",
