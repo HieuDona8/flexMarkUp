@@ -1,0 +1,6 @@
+@import '../../marketplace.css';
+
+.submitButton{
+  color: yellow;  
+  background-color: var(--marketplaceColorGreen)
+}

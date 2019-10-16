@@ -17,6 +17,7 @@ import { Modal, NamedRedirect, Tabs } from '../../components';
 import EditListingWizardTab, {
   AVAILABILITY,
   DESCRIPTION,
+  CAPACITY,
   FEATURES,
   POLICY,
   LOCATION,
@@ -33,6 +34,7 @@ const availabilityMaybe = config.enableAvailability ? [AVAILABILITY] : [];
 export const TABS = [
   DESCRIPTION,
   FEATURES,
+  CAPACITY,
   POLICY,
   LOCATION,
   PRICING,
@@ -49,7 +51,9 @@ const tabLabel = (intl, tab) => {
     key = 'EditListingWizard.tabLabelDescription';
   } else if (tab === FEATURES) {
     key = 'EditListingWizard.tabLabelFeatures';
-  } else if (tab === POLICY) {
+  } else if (tab === CAPACITY) {
+    key = 'EditListingWizard.tabLabelCapacity';
+  }  else if (tab === POLICY) {
     key = 'EditListingWizard.tabLabelPolicy';
   } else if (tab === LOCATION) {
     key = 'EditListingWizard.tabLabelLocation';
@@ -88,6 +92,8 @@ const tabCompleted = (tab, listing) => {
       return !!(description && title);
     case FEATURES:
       return !!(publicData && publicData.amenities);
+    case CAPACITY:
+      return !!(publicData && publicData.capacity);
     case POLICY:
       return !!(publicData && typeof publicData.rules !== 'undefined');
     case LOCATION:

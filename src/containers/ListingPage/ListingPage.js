@@ -44,6 +44,7 @@ import { TopbarContainer, NotFoundPage } from '../../containers';
 import { sendEnquiry, loadData, setInitialValues } from './ListingPage.duck';
 import SectionImages from './SectionImages';
 import SectionAvatar from './SectionAvatar';
+import SectionCapacity from './SectionCapacity';
 import SectionHeading from './SectionHeading';
 import SectionDescriptionMaybe from './SectionDescriptionMaybe';
 import SectionFeaturesMaybe from './SectionFeaturesMaybe';
@@ -100,15 +101,23 @@ export class ListingPageComponent extends Component {
     } = this.props;
     const listingId = new UUID(params.id);
     const listing = getListing(listingId);
-
-    const { bookingDates, ...bookingData } = values;
+   
+    //need to bookingData
+    //listing.quantity = 1;
+    
+    //add time to Date
+    const { startDate, endDate, hourStart, hourEnd , ...bookingData } = values;
+    const timeStart = hourStart.split(":");
+    const timeEnd = hourEnd.split(":");
+    startDate.date.setHours(Number(timeStart[0]),Number(timeStart[1]));
+    endDate.date.setHours(Number(timeEnd[0]),Number(timeEnd[1]));
 
     const initialValues = {
       listing,
       bookingData,
       bookingDates: {
-        bookingStart: bookingDates.startDate,
-        bookingEnd: bookingDates.endDate,
+        bookingStart: startDate.date,
+        bookingEnd: endDate.date,
       },
       confirmPaymentError: null,
     };
@@ -190,6 +199,7 @@ export class ListingPageComponent extends Component {
       fetchTimeSlotsError,
       categoriesConfig,
       amenitiesConfig,
+      capacityConfig,
     } = this.props;
 
     const listingId = new UUID(rawParams.id);
@@ -199,6 +209,7 @@ export class ListingPageComponent extends Component {
       isPendingApprovalVariant || isDraftVariant
         ? ensureOwnListing(getOwnListing(listingId))
         : ensureListing(getListing(listingId));
+
 
     const listingSlug = rawParams.slug || createSlug(currentListing.attributes.title || '');
     const params = { slug: listingSlug, ...rawParams };
@@ -235,7 +246,8 @@ export class ListingPageComponent extends Component {
       title = '',
       publicData,
     } = currentListing.attributes;
-
+    
+    
     const richTitle = (
       <span>
         {richText(title, {
@@ -246,7 +258,7 @@ export class ListingPageComponent extends Component {
     );
 
     const bookingTitle = (
-      <FormattedMessage id="ListingPage.bookingTitle" values={{ title: richTitle }} />
+      <FormattedMessage id="ListingPage.bookingTitle" values={{ title: "Hyundai Elantra 2017" }} />
     );
     const bookingSubTitle = intl.formatMessage({ id: 'ListingPage.bookingSubTitle' });
 
@@ -327,6 +339,7 @@ export class ListingPageComponent extends Component {
     const { formattedPrice, priceTitle } = priceData(price, intl);
 
     const handleBookingSubmit = values => {
+      //edit booking submit
       const isCurrentlyClosed = currentListing.attributes.state === LISTING_STATE_CLOSED;
       if (isOwnListing || isCurrentlyClosed) {
         window.scrollTo(0, 0);
@@ -426,8 +439,14 @@ export class ListingPageComponent extends Component {
                     showContactUser={showContactUser}
                     onContactUser={this.onContactUser}
                   />
+
                   <SectionDescriptionMaybe description={description} />
+
                   <SectionFeaturesMaybe options={amenitiesConfig} publicData={publicData} />
+                  
+                  {/* mới thêm vao */}
+                  <SectionCapacity options={capacityConfig} publicData={publicData} />
+
                   <SectionRulesMaybe publicData={publicData} />
                   <SectionMapMaybe
                     geolocation={geolocation}
@@ -486,6 +505,7 @@ ListingPageComponent.defaultProps = {
   sendEnquiryError: null,
   categoriesConfig: config.custom.categories,
   amenitiesConfig: config.custom.amenities,
+  capacityConfig: config.custom.capacityOptions,/////////////////////////////
 };
 
 ListingPageComponent.propTypes = {
@@ -496,7 +516,6 @@ ListingPageComponent.propTypes = {
   location: shape({
     search: string,
   }).isRequired,
-
   unitType: propTypes.bookingUnitType,
   // from injectIntl
   intl: intlShape.isRequired,
@@ -527,6 +546,7 @@ ListingPageComponent.propTypes = {
 
   categoriesConfig: array,
   amenitiesConfig: array,
+  capacityConfig: array,
 };
 
 const mapStateToProps = state => {
@@ -597,5 +617,6 @@ const ListingPage = compose(
 
 ListingPage.setInitialValues = initialValues => setInitialValues(initialValues);
 ListingPage.loadData = loadData;
+
 
 export default ListingPage;
