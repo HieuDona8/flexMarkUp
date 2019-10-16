@@ -61,7 +61,32 @@ export class BookingDatesFormComponent extends Component {
       this.setState({ focusedInput: NUMBER_PERSON });
       return false;
     }else {
-      this.props.onSubmit(e);
+      //quantity
+      // //set time of day => 0
+      if( startDate && endDate ){          
+        startDate.date.setHours(0,0);
+        endDate.date.setHours(0,0);
+      }
+      //get timeDate
+      const timeDiff = startDate && endDate ? moment(endDate.date).diff(moment(startDate.date)) : null;
+      const timeDuration = timeDiff || timeDiff === 0 ? moment.duration(timeDiff) : null;          
+      //get time          
+      const timeEnd = hourEnd ? hourEnd.split(":") : null;
+      const timeAddDay = timeEnd && (timeEnd[0] > 0 || timeEnd[1] > 0) ? true : false;        
+      //get day:
+      const days = timeDuration ? timeAddDay ? timeDuration.get("days") + 1 : timeDuration.get("days")  : null;           
+      //daysBetween(startDate.date, endDate.date) : null;
+      const quantity = numberPerson && days ? numberPerson*days : null;          
+      //move time too date          
+      if( quantity ){
+        const timeStart = hourStart.split(":");
+        const timeEnd = hourEnd.split(":");
+        startDate.date.setHours(Number(timeStart[0]),Number(timeStart[1]));
+        endDate.date.setHours(Number(timeEnd[0]),Number(timeEnd[1]));
+      }
+
+      const values ={...e, quantity };
+      this.props.onSubmit(values);
     }
   }
 

@@ -294,7 +294,7 @@ export const sendMessage = params => (dispatch, getState, sdk) => {
  * pricing info for the booking breakdown to get a proper estimate for
  * the price with the chosen information.
  */
-export const speculateTransaction = params => async(dispatch, getState, sdk) => {
+export const speculateTransaction = params => async(dispatch, getState, sdk) => {  
   let typeBooking = TRANSITION_REQUEST_FIRST_TIME;
   //check first booking
   await sdk.transactions.query({

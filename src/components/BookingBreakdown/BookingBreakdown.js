@@ -28,7 +28,6 @@ import css from './BookingBreakdown.css';
 
 export const BookingBreakdownComponent = props => {
   const { rootClassName, className, userRole, unitType, transaction, booking, intl } = props;
-   
   const isCustomer = userRole === 'customer';
   const isProvider = userRole === 'provider';
 

@@ -167,7 +167,6 @@ export class CheckoutPageComponent extends Component {
       ? { bookingData, bookingDates, listing, transaction}
       : storedData(STORAGE_KEY);
 
-
     // Check if a booking is already created according to stored data.
     const tx = pageData ? pageData.transaction : null;
     const isBookingCreated = tx && tx.booking && tx.booking.id;
@@ -197,24 +196,8 @@ export class CheckoutPageComponent extends Component {
       // The way to pass it to checkout page is through pageData.bookingData
       
       //quantity
-      const { hourEnd, numberPerson } = pageData.bookingData;
-      //copy dates:
-      const startDate = new Date(bookingStart);
-      const endDate = new Date(bookingEnd);
-      if( startDate && endDate ){
-        startDate.setHours(0,0);
-        endDate.setHours(0,0);
-      }
-      //get timeDate
-      const timeDiff = startDate && endDate ? moment(endDate).diff(moment(startDate)) : null;
-      const timeDuration = timeDiff || timeDiff === 0 ? moment.duration(timeDiff) : null;          
-      //get time          
-      const timeEnd = hourEnd ? hourEnd.split(":") : null;
-      const timeAddDay = timeEnd && (timeEnd[0] > 0 || timeEnd[1] > 0) ? true : false;        
-      //get day:
-      const days = timeDuration ? timeAddDay ? timeDuration.get("days") + 1 : timeDuration.get("days")  : null;                 
-      const quantity = numberPerson && days ? numberPerson*days : null;
-
+      const { quantity }= pageData.bookingData || {};
+            
       fetchSpeculatedTransaction({
         listingId,
         bookingStart,
@@ -245,7 +228,7 @@ export class CheckoutPageComponent extends Component {
       saveAfterOnetimePayment,
     } = handlePaymentParams;
     const storedTx = ensureTransaction(pageData.transaction);
- 
+    
     const ensuredCurrentUser = ensureCurrentUser(currentUser);
     const ensuredStripeCustomer = ensureStripeCustomer(ensuredCurrentUser.stripeCustomer);
     const ensuredDefaultPaymentMethod = ensurePaymentMethodCard(
@@ -384,7 +367,7 @@ export class CheckoutPageComponent extends Component {
     // NOTE: if unit type is line-item/units, quantity needs to be added.
     // The way to pass it to checkout page is through pageData.bookingData
     const tx = speculatedTransaction ? speculatedTransaction : storedTx;
-
+    
     // Note: optionalPaymentParams contains Stripe paymentMethod,
     // but that can also be passed on Step 2
     // stripe.handleCardPayment(stripe, { payment_method: stripePaymentMethodId })
@@ -395,11 +378,12 @@ export class CheckoutPageComponent extends Component {
         ? { setupPaymentMethodForSaving: true }
         : {};
 
+    const { quantity } = handlePaymentParams.pageData.bookingData || null;
     const orderParams = {
       listingId: pageData.listing.id,
       bookingStart: tx.booking.attributes.start,
       bookingEnd: tx.booking.attributes.end,
-      quantity: 1,
+      quantity,
       ...optionalPaymentParams,
     };
 
@@ -464,7 +448,8 @@ export class CheckoutPageComponent extends Component {
 
     this.handlePaymentIntent(requestPaymentParams)
       .then(res => {
-        const { orderId, messageSuccess, paymentMethodSaved } = res;
+        console.log("myRES: ", res)
+        const { orderId, messageSuccess, paymentMethodSaved } = res;        
         this.setState({ submitting: false });
 
         const routes = routeConfiguration();
@@ -604,7 +589,7 @@ export class CheckoutPageComponent extends Component {
 
     // Show breakdown only when speculated transaction and booking are loaded
     // (i.e. have an id)
-    const tx = existingTransaction.booking ? existingTransaction : speculatedTransaction;
+    const tx = existingTransaction.booking ? existingTransaction : speculatedTransaction;    
     const txBooking = ensureBooking(tx.booking);
     const breakdown =
       tx.id && txBooking.id ? (
