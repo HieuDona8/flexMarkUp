@@ -12,6 +12,7 @@ import {
   txIsPaymentPending,
   txIsRequested,
   txHasBeenDelivered,
+  txIsAfter48hour,
 } from '../../util/transaction';
 import { LINE_ITEM_NIGHT, LINE_ITEM_DAY, propTypes } from '../../util/types';
 import {
@@ -50,6 +51,7 @@ import PanelHeading, {
   HEADING_DECLINED,
   HEADING_CANCELED,
   HEADING_DELIVERED,
+  HEADING_AFTER_48_HOUR,
 } from './PanelHeading';
 
 import css from './TransactionPanel.css';
@@ -252,6 +254,13 @@ export class TransactionPanelComponent extends Component {
           showAddress: isCustomer,
           showCancelButtons: isProvider || isCustomer,
         };
+      } else if (txIsAfter48hour(tx)) {
+        return {
+          headingState: HEADING_AFTER_48_HOUR,
+          showDetailCardHeadings: isCustomer,
+          showAddress: isCustomer,
+          showCancel48Buttons: isProvider || isCustomer,
+        };
       } else if (txIsDeclined(tx)) {
         return {
           headingState: HEADING_DECLINED,
@@ -323,7 +332,7 @@ export class TransactionPanelComponent extends Component {
 
     const cancelButton = (
       <CancelActionButtonMaybe
-        showButtons={stateData.showCancelButtons}
+        showButtons={stateData.showCancelButtons || stateData.showCancel48Buttons}
         cancelInProgress={cancelInProgress}        
         cancelSaleError={cancelSaleError}        
         onCancelSale={() => onCancelSale(currentTransaction.id, isCustomer, currentTransaction)}
@@ -487,6 +496,11 @@ export class TransactionPanelComponent extends Component {
               {stateData.showDeclineButtons ?(
                 <div>
                   <div className={css.desktopActionButtons}>{declineButton}</div>
+                </div>
+              ) : null}
+              {stateData.showCancel48Buttons ?(
+                <div>
+                  <div className={css.desktopActionButtons}>{cancelButton}</div>
                 </div>
               ) : null}
             </div>

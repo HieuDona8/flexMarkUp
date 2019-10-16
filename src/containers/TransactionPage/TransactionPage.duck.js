@@ -398,10 +398,7 @@ export const declineSale = (id, isCustomer) => (dispatch, getState, sdk) => {
     });
 };
 
-export const cancelSale = (id, isCustomer, transaction) => (dispatch, getState, sdk) => {
-  //console.log("Login Cancel", isCustomer, txIsAfter48hour(transaction));
-  //check customer:
-  //txIsAfter48hour(transaction)
+export const cancelSale = (id, isCustomer, transaction) => (dispatch, getState, sdk) => {  
   const typeCancel = isCustomer ? txIsAfter48hour(transaction) ? TRANSITION_CUSTOMER_CANCEL_NON_REFUND : TRANSITION_CUSTOMER_CANCEL_REFUND : TRANSITION_PROVIDER_CANCEL_REFUND;
   if (cancelInProgress(getState())) {
     return Promise.reject(new Error('Cancel already in progress'));
