@@ -198,7 +198,47 @@ class SearchFiltersMobileComponent extends Component {
       dateRangeFilter,
       keywordFilter,
       intl,
+      capacityFilter,
+      urlQueryParams,
+      history,
     } = this.props;
+
+
+    // resolve initial value for a single value filter
+    const initialValue = (queryParams, paramName) => {
+      return queryParams[paramName];
+    };
+    //them label
+    const capacityLabel = intl.formatMessage({
+      id: 'SearchFilters.capacityLabel',
+    })
+    //khoi tao
+    const initialCapacity = capacityFilter 
+      ? initialValue(urlQueryParams, capacityFilter.paramName)
+      : null;
+
+    const handleSelectOption = (urlParam, option) => {
+      // query parameters after selecting the option
+      // if no option is passed, clear the selection for the filter
+      const queryParams = option
+        ? { ...urlQueryParams, [urlParam]: option }
+        : omit(urlQueryParams, urlParam);
+  
+      history.push(createResourceLocatorString('SearchPage', routeConfiguration(), {}, queryParams));
+    };
+
+    //them vao capacityLabel
+    const capacityFilterElement = capacityFilter ? (
+      <SelectSingleFilter
+        urlParam={capacityFilter.paramName}
+        label={capacityLabel}
+        onSelect={handleSelectOption}
+        showAsPopup
+        options={capacityFilter.options}
+        initialValue={initialCapacity}
+        //contentPlacementOffset={FILTER_DROPDOWN_OFFSET}
+      />
+    ) : null;
 
     const classes = classNames(rootClassName || css.root, className);
 
@@ -334,6 +374,7 @@ class SearchFiltersMobileComponent extends Component {
               {amenitiesFilterElement}
               {priceFilterElement}
               {dateRangeFilterElement}
+              {capacityFilterElement}
             </div>
           ) : null}
 

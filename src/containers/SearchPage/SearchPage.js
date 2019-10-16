@@ -58,6 +58,7 @@ export class SearchPageComponent extends Component {
       priceFilterConfig,
       dateRangeFilterConfig,
       keywordFilterConfig,
+      capacityOptions,
     } = this.props;
 
     // Note: "category" and "amenities" filters are not actually filtering anything by default.
@@ -66,6 +67,10 @@ export class SearchPageComponent extends Component {
     // https://www.sharetribe.com/docs/references/extended-data/#data-schema
 
     return {
+      capacityFilter: {
+        paramName: 'pub_capacity',
+        options: capacityOptions,
+      },
       categoryFilter: {
         paramName: 'pub_category',
         options: categories,
@@ -231,6 +236,7 @@ export class SearchPageComponent extends Component {
               priceFilter: filters.priceFilter,
               dateRangeFilter: filters.dateRangeFilter,
               keywordFilter: filters.keywordFilter,
+              capacityFilter: filters.capacityFilter,///////
             }}
           />
           <ModalInMobile
@@ -280,6 +286,7 @@ SearchPageComponent.defaultProps = {
   dateRangeFilterConfig: config.custom.dateRangeFilterConfig,
   keywordFilterConfig: config.custom.keywordFilterConfig,
   activeListingId: null,
+  capacityOptions: config.custom.capacityOptions,
 };
 
 SearchPageComponent.propTypes = {
@@ -378,7 +385,7 @@ SearchPage.loadData = (params, search) => {
     page,
     perPage: RESULT_PAGE_SIZE,
     include: ['author', 'images'],
-    'fields.listing': ['title', 'geolocation', 'price'],
+    'fields.listing': ['title', 'geolocation', 'price','publicData'],
     'fields.user': ['profile.displayName', 'profile.abbreviatedName'],
     'fields.image': ['variants.landscape-crop', 'variants.landscape-crop2x'],
     'limit.images': 1,

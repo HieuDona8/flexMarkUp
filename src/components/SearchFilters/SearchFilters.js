@@ -35,13 +35,13 @@ const initialValues = (queryParams, paramName) => {
 
 const initialPriceRangeValue = (queryParams, paramName) => {
   const price = queryParams[paramName];
-  const valuesFromParams = !!price ? price.split(',').map(v => Number.parseInt(v, RADIX)) : [];
+  const valuesFromParams = !! price ? price.split(',').map(v => Number.parseInt(v, RADIX)) : [];
 
   return !!price && valuesFromParams.length === 2
     ? {
-        minPrice: valuesFromParams[0],
-        maxPrice: valuesFromParams[1],
-      }
+      minPrice: valuesFromParams[0],
+      maxPrice: valuesFromParams[1],
+    }
     : null;
 };
 
@@ -77,10 +77,16 @@ const SearchFiltersComponent = props => {
     searchFiltersPanelSelectedCount,
     history,
     intl,
+    capacityFilter,
   } = props;
 
   const hasNoResult = listingsAreLoaded && resultsCount === 0;
   const classes = classNames(rootClassName || css.root, { [css.longInfo]: hasNoResult }, className);
+
+  //them label
+  const capacityLabel = intl.formatMessage({
+    id: 'SearchFilters.capacityLabel',
+  })
 
   const categoryLabel = intl.formatMessage({
     id: 'SearchFilters.categoryLabel',
@@ -93,6 +99,11 @@ const SearchFiltersComponent = props => {
   const keywordLabel = intl.formatMessage({
     id: 'SearchFilters.keywordLabel',
   });
+
+  //khoi tao
+  const initialCapacity = capacityFilter 
+    ? initialValue(urlQueryParams, capacityFilter.paramName)
+    : null;
 
   const initialAmenities = amenitiesFilter
     ? initialValues(urlQueryParams, amenitiesFilter.paramName)
@@ -177,6 +188,19 @@ const SearchFiltersComponent = props => {
     />
   ) : null;
 
+  //them vao capacityLabel
+  const capacityFilterElement = capacityFilter ? (
+    <SelectSingleFilter
+      urlParam={capacityFilter.paramName}
+      label={capacityLabel}
+      onSelect={handleSelectOption}
+      showAsPopup
+      options={capacityFilter.options}
+      initialValue={initialCapacity}
+      contentPlacementOffset={FILTER_DROPDOWN_OFFSET}
+    />
+  ) : null;
+
   const amenitiesFilterElement = amenitiesFilter ? (
     <SelectMultipleFilter
       id={'SearchFilters.amenitiesFilter'}
@@ -254,6 +278,8 @@ const SearchFiltersComponent = props => {
         {priceFilterElement}
         {dateRangeFilterElement}
         {keywordFilterElement}
+        {/* thêm vào */}
+        {capacityFilterElement}
         {toggleSearchFiltersPanelButton}
       </div>
 
@@ -302,8 +328,8 @@ SearchFiltersComponent.propTypes = {
   resultsCount: number,
   searchingInProgress: bool,
   onManageDisableScrolling: func.isRequired,
-  categoriesFilter: propTypes.filterConfig,
-  amenitiesFilter: propTypes.filterConfig,
+  categoriesFilter: propTypes.filterConfig,/////
+  amenitiesFilter: propTypes.filterConfig,/////////
   priceFilter: propTypes.filterConfig,
   dateRangeFilter: propTypes.filterConfig,
   isSearchFiltersPanelOpen: bool,
