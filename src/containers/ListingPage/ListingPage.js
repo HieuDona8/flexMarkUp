@@ -44,7 +44,7 @@ import { TopbarContainer, NotFoundPage } from '../../containers';
 import { sendEnquiry, loadData, setInitialValues, isFirstBooking } from './ListingPage.duck';
 import SectionImages from './SectionImages';
 import SectionAvatar from './SectionAvatar';
-import SectionCapacity from './SectionCapacity';//thêm vào
+import SectionCapacity from './SectionCapacity';
 import SectionHeading from './SectionHeading';
 import SectionDescriptionMaybe from './SectionDescriptionMaybe';
 import SectionFeaturesMaybe from './SectionFeaturesMaybe';
@@ -398,7 +398,7 @@ export class ListingPageComponent extends Component {
         </span>
       ) : null;
 
-      return (
+    return (
       <Page
         title={schemaTitle}
         scrollingDisabled={scrollingDisabled}
@@ -450,8 +450,7 @@ export class ListingPageComponent extends Component {
                   <SectionDescriptionMaybe description={description} />
 
                   <SectionFeaturesMaybe options={amenitiesConfig} publicData={publicData} />
-                  
-                  {/* mới thêm vao */}
+                                    
                   <SectionCapacity options={capacityConfig} publicData={publicData} />
 
                   <SectionRulesMaybe publicData={publicData} />

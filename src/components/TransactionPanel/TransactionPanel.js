@@ -40,8 +40,8 @@ import DetailCardHeadingsMaybe from './DetailCardHeadingsMaybe';
 import DetailCardImage from './DetailCardImage';
 import FeedSection from './FeedSection';
 import SaleActionButtonsMaybe from './SaleActionButtonsMaybe';
-import CancelActionButtonMaybe from './CancelActionButtonMaybe';
-import DeclineActionButtonMaybe from './DeclineActionButtonMaybe';
+import ActionButtonMayBe from './ActionButtonMayBe';
+
 import PanelHeading, {
   HEADING_ENQUIRED,
   HEADING_PAYMENT_PENDING,
@@ -220,8 +220,8 @@ export class TransactionPanelComponent extends Component {
       if (txIsEnquired(tx)) {
         const transitions = Array.isArray(nextTransitions)
           ? nextTransitions.map(transition => {
-              return transition.attributes.name;
-            })
+            return transition.attributes.name;
+          })
           : [];
         const hasCorrectNextTransition =
           transitions.length > 0 && transitions.includes(TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY);
@@ -306,8 +306,8 @@ export class TransactionPanelComponent extends Component {
     const unitTranslationKey = isNightly
       ? 'TransactionPanel.perNight'
       : isDaily
-      ? 'TransactionPanel.perDay'
-      : 'TransactionPanel.perUnit';
+        ? 'TransactionPanel.perDay'
+        : 'TransactionPanel.perUnit';
 
     const price = currentListing.attributes.price;
     const bookingSubTitle = price
@@ -329,20 +329,23 @@ export class TransactionPanelComponent extends Component {
       />
     );
 
-    const cancelButton = (
-      <CancelActionButtonMaybe
-        showButtons={stateData.showCancelButtons || stateData.showCancel48Buttons}
-        cancelInProgress={cancelInProgress}        
-        cancelSaleError={cancelSaleError}        
-        onCancelSale={() => onCancelSale(currentTransaction.id, isCustomer, currentTransaction)}
+    const declineButton = (
+      <ActionButtonMayBe
+        showButtons={stateData.showDeclineButtons}
+        stateInProgress = {declineInProgress}
+        stateSaleError={declineSaleError}
+        title = {"Decline"}
+        onActionSale={() => onDeclineSale(currentTransaction.id, isCustomer)}
       />
     );
 
-    const declineButton = (
-      <DeclineActionButtonMaybe
-        showButtons={stateData.showDeclineButtons}
-        declineSaleError={declineSaleError}
-        onDeclineSale={() => onDeclineSale(currentTransaction.id, isCustomer)}
+    const cancelButton = (
+      <ActionButtonMayBe
+        showButtons={stateData.showCancelButtons || stateData.showCancel48Buttons}
+        stateInProgress = {cancelInProgress}
+        stateSaleError = {cancelSaleError}
+        title = {"Cancel"}
+        onActionSale = {() => onCancelSale(currentTransaction.id, isCustomer, currentTransaction)}
       />
     );
 

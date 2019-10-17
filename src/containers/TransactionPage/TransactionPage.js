@@ -85,7 +85,6 @@ export const TransactionPageComponent = props => {
   } = props;
 
   const currentTransaction = ensureTransaction(transaction);
-  console.log("currentTransaction: ", currentTransaction)
   
   const currentListing = ensureListing(currentTransaction.listing);
   const isProviderRole = transactionRole === PROVIDER;

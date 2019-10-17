@@ -294,10 +294,9 @@ export const sendMessage = params => (dispatch, getState, sdk) => {
  * pricing info for the booking breakdown to get a proper estimate for
  * the price with the chosen information.
  */
-export const speculateTransaction = params => async(dispatch, getState, sdk) => {  
-  let typeBooking = TRANSITION_REQUEST_FIRST_TIME;
+export const speculateTransaction = params => (dispatch, getState, sdk) => {  
   //check first booking
-  await sdk.transactions.query({
+  sdk.transactions.query({
     only: "order",
     lastTransitions: [
       TRANSITION_REQUEST_FIRST_TIME, 
@@ -315,50 +314,47 @@ export const speculateTransaction = params => async(dispatch, getState, sdk) => 
     ]
   }).then(res => {
     if(res.data.data.length > 0){      
-      typeBooking = TRANSITION_REQUEST;
+      return TRANSITION_REQUEST;
     }
-  });
+    return TRANSITION_REQUEST_FIRST_TIME;
+  }).then( bookingStyle => {
+    dispatch(speculateTransactionRequest());
+    const bodyParams = {
+      transition: bookingStyle,
+      processAlias: config.bookingProcessAlias,
+      params: {
+        ...params,
+        cardToken: 'CheckoutPage_speculative_card_token',
+      },
+    };
 
-  dispatch(speculateTransactionRequest());
-  const bodyParams = {
-    transition: typeBooking,
-    processAlias: config.bookingProcessAlias,
-    params: {
-      ...params,
-      //bookingDisplayStart: new Date("2019-10-5T00:00:00.000Z"),
-      //bookingDisplayEnd: new Date("2018-10-5T00:00:00.000Z"),
-      cardToken: 'CheckoutPage_speculative_card_token',
-      //cardToken: "tok_mastercard",
-    },
-  };
-
-
-  const queryParams = {
-    include: ['booking', 'provider'],
-    expand: true,
-  };
-
-  return sdk.transactions
-    .initiateSpeculative(
-      bodyParams, queryParams
-    )
-    .then(response => {
-      const entities = denormalisedResponseEntities(response);
-      if (entities.length !== 1) {
-        throw new Error('Expected a resource in the sdk.transactions.initiateSpeculative response');
-      }
-      const tx = entities[0];
-      dispatch(speculateTransactionSuccess(tx));
-    })
-    .catch(e => {
-      const { listingId, bookingStart, bookingEnd } = params;
-      log.error(e, 'speculate-transaction-failed', {
-        listingId: listingId.uuid,
-        bookingStart,
-        bookingEnd,
+    const queryParams = {
+      include: ['booking', 'provider'],
+      expand: true,
+    };
+  
+    return sdk.transactions
+      .initiateSpeculative(
+        bodyParams, queryParams
+      )
+      .then(response => {
+        const entities = denormalisedResponseEntities(response);
+        if (entities.length !== 1) {
+          throw new Error('Expected a resource in the sdk.transactions.initiateSpeculative response');
+        }
+        const tx = entities[0];
+        dispatch(speculateTransactionSuccess(tx));
+      })
+      .catch(e => {
+        const { listingId, bookingStart, bookingEnd } = params;
+        log.error(e, 'speculate-transaction-failed', {
+          listingId: listingId.uuid,
+          bookingStart,
+          bookingEnd,
+        });
+        return dispatch(speculateTransactionError(storableError(e)));
       });
-      return dispatch(speculateTransactionError(storableError(e)));
-    });
+  });
 };
 
 // StripeCustomer is a relantionship to currentUser

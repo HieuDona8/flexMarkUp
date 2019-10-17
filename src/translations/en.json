@@ -919,6 +919,8 @@
   "TransactionPanel.customerBannedStatus": "The user made the request, but was later banned.",
   "TransactionPanel.declineButton": "Decline",
   "TransactionPanel.cancelButton": "Cancel",
+  "TransactionPanel.actionButton": "{title}" ,
+  "TransactionPanel.actionSaleFailed": "Oops, {title} failed. Please try again",
   "TransactionPanel.declineSaleFailed": "Oops, declining failed. Please try again.",
   "TransactionPanel.deletedListingOrderTitle": "a listing",
   "TransactionPanel.deletedListingTitle": "Deleted listing",

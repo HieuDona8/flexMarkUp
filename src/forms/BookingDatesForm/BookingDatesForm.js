@@ -1,22 +1,32 @@
 import React, { Component } from 'react';
 import { string, bool, arrayOf } from 'prop-types';
 import { compose } from 'redux';
-import { daysBetween } from '../../util/dates';
 import { Form as FinalForm } from 'react-final-form';
 import { FormattedMessage, intlShape, injectIntl } from '../../util/reactIntl';
 import classNames from 'classnames';
 import moment from 'moment';
-import { required, bookingDatesRequired, composeValidators } from '../../util/validators';
-import { START_DATE, END_DATE, START_HOUR, END_HOUR, NUMBER_PERSON } from '../../util/dates';
+import { 
+  START_DATE, 
+  END_DATE, 
+  START_HOUR, 
+  END_HOUR, 
+  NUMBER_PERSON
+} from '../../util/dates';
 import { propTypes } from '../../util/types';
 import config from '../../config';
-import { Form, PrimaryButton, FieldDateRangeInput, FieldSelect, FieldDateInput, FieldTextInput } from '../../components';
+import { 
+  Form, 
+  PrimaryButton, 
+  FieldSelect, 
+  FieldDateInput, 
+  FieldTextInput 
+} from '../../components';
 import EstimatedBreakdownMaybe from './EstimatedBreakdownMaybe';
 
 
 import css from './BookingDatesForm.css';
 
-const identity = v => v;
+//const identity = v => v;
 
 export class BookingDatesFormComponent extends Component {
   constructor(props) {
@@ -85,7 +95,7 @@ export class BookingDatesFormComponent extends Component {
         endDate.date.setHours(Number(timeEnd[0]),Number(timeEnd[1]));
       }
 
-      const values ={...e, quantity };
+      const values ={ ...e, quantity };
       this.props.onSubmit(values);
     }
   }
@@ -116,26 +126,21 @@ export class BookingDatesFormComponent extends Component {
     return (
       <FinalForm
         {...rest}
-        unitPrice={unitPrice}
-        //onSubmit={(e) => {console.log(e);this.handleFormSubmit(e)}}
+        unitPrice={unitPrice}        
         onSubmit={this.handleFormSubmit}
         render={fieldRenderProps => {
-          const {
-            endDatePlaceholder,
-            startDatePlaceholder,
-            formId,
+          const {           
             handleSubmit,
             intl,
             isOwnListing,
             submitButtonWrapperClassName,
             unitPrice,
             unitType,
-            values,
-            timeSlots,
+            values,            
             fetchTimeSlotsError,
             form
           } = fieldRenderProps;
-          const { startDate, endDate, hourStart, hourEnd, numberPerson} = values && values.startDate && values.hourStart && values.hourEnd ? values : {};
+          const { startDate, endDate, hourStart, hourEnd, numberPerson } = values && values.startDate && values.hourStart && values.hourEnd ? values : {};
           
           // EDIT DATE
           //INPUT startDate FIRST (don't have endDate)
@@ -163,12 +168,12 @@ export class BookingDatesFormComponent extends Component {
           //NOT update HAVE startDate, endDate AND start - end =>0; = 0 BECAUSE booking by time
           if (values.startDate && values.endDate && moment(values.startDate.date).diff(moment(values.endDate.date), "days") > 0) {
             const myStarCur = moment(values.startDate.date).diff(moment(), "days");
-            //end lùi cập nhật start
+            //end sub => update start
             if(myStarCur === this.startValue){
               form.change("startDate", { date: new Date(moment(values.endDate.date)) });
-              this.startValue = moment(values.startDate.date).diff(moment(), "days")              
+              this.startValue = moment(values.startDate.date).diff(moment(), "days");              
             } else{
-              //start tiến cập nhật end
+              //start plus => update end
               form.change("endDate", { date: new Date(moment(values.startDate.date).add(1, "days")) });
               this.startValue = moment(values.startDate.date).diff(moment(), "days");              
             }
@@ -185,7 +190,7 @@ export class BookingDatesFormComponent extends Component {
               // e.g. 00:30 ... 22:30.
               const getHour = i >= 10 ? i : `0${i}`;
               const halfHour24 = `${getHour}:30`;
-              //const halfHour24 = `${i >= 10 ? i : `0${i}`}:30`;
+              //the same code to do: const halfHour24 = `${i >= 10 ? i : `0${i}`}:30`;
               const halfHourHuman = date
                 .clone()
                 .add(i, 'hours')
@@ -203,11 +208,7 @@ export class BookingDatesFormComponent extends Component {
               const sharpHour24 = `${getSharpHour}:00`; 
 
               //const sharpHour24 = `${i >= 10 ? i : `0${i}`}:00`;
-              const sharpHourHuman = date
-                .clone()
-                .add(i, 'hours')
-                .format(HOUR_FORMAT);
-
+              const sharpHourHuman = date.clone().add(i, 'hours').format(HOUR_FORMAT);
               const optionSharpHour = (
                 <option key={sharpHour24} value={sharpHour24}>
                   {sharpHourHuman}
@@ -239,14 +240,7 @@ export class BookingDatesFormComponent extends Component {
           const bookingTimeStartLabel = intl.formatMessage({ id: 'BookingDatesForm.bookingTimeStartTitle' });
           const bookingTimeEndLabel = intl.formatMessage({ id: 'BookingDatesForm.bookingTimeEndTitle' });
           const bookingNumberPerson = intl.formatMessage({ id: 'BookingDatesForm.bookingNumberPerson' });
-
-          const requiredMessage = intl.formatMessage({ id: 'BookingDatesForm.requiredDate' });
-          const startDateErrorMessage = intl.formatMessage({
-            id: 'FieldDateRangeInput.invalidStartDate',
-          });
-          const endDateErrorMessage = intl.formatMessage({
-            id: 'FieldDateRangeInput.invalidEndDate',
-          });
+         
           const timeSlotsError = fetchTimeSlotsError ? (
             <p className={css.timeSlotsError}>
               <FormattedMessage id="BookingDatesForm.timeSlotsError" />
@@ -313,28 +307,12 @@ export class BookingDatesFormComponent extends Component {
               <EstimatedBreakdownMaybe bookingData={bookingData} isFirstBooking={isFirstBooking}/>
             </div>
           ) : null;
-          
-          const dateFormatOptions = {
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-          };
 
-          const now = moment();
-          const today = now.startOf('day').toDate();
-          const tomorrow = now
-            .startOf('day')
-            .add(1, 'days')
-            .toDate();
-          const startDatePlaceholderText =
-            startDatePlaceholder || intl.formatDate(today, dateFormatOptions);
-          const endDatePlaceholderText =
-            endDatePlaceholder || intl.formatDate(tomorrow, dateFormatOptions);
           const submitButtonClasses = classNames(
             submitButtonWrapperClassName || css.submitButtonWrapper
           );
 
-          const classDate = classNames(css.dateBook, css.specialBook)
+          const classDate = classNames(css.dateBook, css.specialBook);
     
           return (
             <Form onSubmit={handleSubmit} className={classes}>

@@ -18,7 +18,7 @@ import {
   ensureStripeCustomer,
   ensurePaymentMethodCard,
 } from '../../util/data';
-import { dateFromLocalToAPI, minutesBetween } from '../../util/dates';
+import { minutesBetween } from '../../util/dates';
 import { createSlug } from '../../util/urlHelpers';
 import {
   isTransactionInitiateAmountTooLowError,
@@ -292,10 +292,10 @@ export class CheckoutPageComponent extends Component {
       const paymentParams =
         selectedPaymentFlow !== USE_SAVED_CARD
           ? {
-              payment_method_data: {
-                billing_details: billingDetails,
-              },
-            }
+            payment_method_data: {
+              billing_details: billingDetails,
+            },
+          }
           : {};
 
       const params = {
@@ -375,8 +375,8 @@ export class CheckoutPageComponent extends Component {
       selectedPaymentFlow === USE_SAVED_CARD && hasDefaultPaymentMethod
         ? { paymentMethod: stripePaymentMethodId }
         : selectedPaymentFlow === PAY_AND_SAVE_FOR_LATER_USE
-        ? { setupPaymentMethodForSaving: true }
-        : {};
+          ? { setupPaymentMethodForSaving: true }
+          : {};
 
     const { quantity } = handlePaymentParams.pageData.bookingData || null;
     const orderParams = {
@@ -417,15 +417,15 @@ export class CheckoutPageComponent extends Component {
     const addressMaybe =
       addressLine1 && postal
         ? {
-            address: {
-              city: city,
-              country: country,
-              line1: addressLine1,
-              line2: addressLine2,
-              postal_code: postal,
-              state: state,
-            },
-          }
+          address: {
+            city: city,
+            country: country,
+            line1: addressLine1,
+            line2: addressLine2,
+            postal_code: postal,
+            state: state,
+          },
+        }
         : {};
     const billingDetails = {
       name,
@@ -447,8 +447,7 @@ export class CheckoutPageComponent extends Component {
 
 
     this.handlePaymentIntent(requestPaymentParams)
-      .then(res => {
-        console.log("myRES: ", res)
+      .then(res => {        
         const { orderId, messageSuccess, paymentMethodSaved } = res;        
         this.setState({ submitting: false });
 
@@ -728,8 +727,8 @@ export class CheckoutPageComponent extends Component {
     const unitTranslationKey = isNightly
       ? 'CheckoutPage.perNight'
       : isDaily
-      ? 'CheckoutPage.perDay'
-      : 'CheckoutPage.perUnit';
+        ? 'CheckoutPage.perDay'
+        : 'CheckoutPage.perUnit';
 
     const price = currentListing.attributes.price;
     const formattedPrice = formatMoney(intl, price);

@@ -7,19 +7,25 @@ import css from './TransactionPanel.css';
 
 // Functional component as a helper to build ActionButtons for
 // provider when state is preauthorized
-const DeclineActionButtonMaybe = props => {
+const ActionButtonMaybe = props => {
   const {
     className,
     rootClassName,
     showButtons,
-    declineInProgress,
-    declineSaleError,
-    onDeclineSale,
+    stateInProgress,
+    stateSaleError,
+    onActionSale,
+    title,
   } = props;
 
-  const declineErrorMessage = declineSaleError ? (
+  const buttonsDisabled = stateInProgress ? true : false;
+
+  const actionErrorMessage = stateSaleError ? (
     <p className={css.actionError}>
-      <FormattedMessage id="TransactionPanel.declineSaleFailed" />
+      <FormattedMessage 
+        id="TransactionPanel.actionSaleFailed" 
+        values = {{ title }}
+      />
     </p>
   ) : null;
 
@@ -28,18 +34,22 @@ const DeclineActionButtonMaybe = props => {
   return showButtons ? (
     <div className={classes}>
       <div className={css.actionErrors}>        
-        {declineErrorMessage}
+        {actionErrorMessage}
       </div>
       <div className={css.actionButtonWrapper}>
         <PrimaryButton
-          inProgress={declineInProgress}          
-          onClick={onDeclineSale}
+          inProgress={stateInProgress} 
+          disabled={buttonsDisabled}         
+          onClick={onActionSale}
         >
-          <FormattedMessage id="TransactionPanel.declineButton" />
+          <FormattedMessage 
+            id="TransactionPanel.actionButton" 
+            values={{ title }}
+          />
         </PrimaryButton>
       </div>
     </div>
   ) : null;
 };
 
-export default DeclineActionButtonMaybe;
+export default ActionButtonMaybe;
