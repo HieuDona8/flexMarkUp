@@ -7,10 +7,6 @@ import css from './ListingPage.css';
 const SectionCapacity = props => {
   const { publicData, options } = props;
   
-  // if(!publicData){
-  //   return null;
-  // }
-
   const { capacity } = publicData || {};
   const capacityOption = options.find(
     option => option.key === capacity

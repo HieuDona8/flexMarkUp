@@ -101,10 +101,7 @@ export class ListingPageComponent extends Component {
     } = this.props;
     const listingId = new UUID(params.id);
     const listing = getListing(listingId);
-   
-    //need to bookingData
-    //listing.quantity = 1;
-    
+       
     //add time to Date
     const { startDate, endDate, hourStart, hourEnd , ...bookingData } = values;
     const timeStart = hourStart.split(":");
@@ -258,7 +255,7 @@ export class ListingPageComponent extends Component {
     );
 
     const bookingTitle = (
-      <FormattedMessage id="ListingPage.bookingTitle" values={{ title: "Hyundai Elantra 2017" }} />
+      <FormattedMessage id="ListingPage.bookingTitle" values={{ title: richTitle }} />
     );
     const bookingSubTitle = intl.formatMessage({ id: 'ListingPage.bookingSubTitle' });
 
@@ -443,8 +440,7 @@ export class ListingPageComponent extends Component {
                   <SectionDescriptionMaybe description={description} />
 
                   <SectionFeaturesMaybe options={amenitiesConfig} publicData={publicData} />
-                  
-                  {/* mới thêm vao */}
+                                    
                   <SectionCapacity options={capacityConfig} publicData={publicData} />
 
                   <SectionRulesMaybe publicData={publicData} />
@@ -505,7 +501,7 @@ ListingPageComponent.defaultProps = {
   sendEnquiryError: null,
   categoriesConfig: config.custom.categories,
   amenitiesConfig: config.custom.amenities,
-  capacityConfig: config.custom.capacityOptions,/////////////////////////////
+  capacityConfig: config.custom.capacityOptions,
 };
 
 ListingPageComponent.propTypes = {
