@@ -223,5 +223,9 @@ export const validSGID = message => value => {
   return value.length === 9 ? VALID : message;
 };
 
+export const bookingPerson = inValidMessage => value => {  
+  return value < 1 ? inValidMessage : null;  
+};
+
 export const composeValidators = (...validators) => value =>
   validators.reduce((error, validator) => error || validator(value), VALID);

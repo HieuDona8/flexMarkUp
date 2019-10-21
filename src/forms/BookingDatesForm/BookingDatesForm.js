@@ -6,7 +6,8 @@ import {
   required, 
   bookingDatesRequired, 
   composeValidators, 
-  bookingDateRequired, 
+  bookingDateRequired,
+  bookingPerson,
 } from '../../util/validators';
 import { createTimeSlots } from '../../util/test-data';
 
@@ -36,7 +37,7 @@ import css from './BookingDatesForm.css';
 
 const identity = v => v;
 
-const createAvailableTimeSlots = (dayCount) => {
+const createAvailableTimeSlots = dayCount => {
   const slots = createTimeSlots(new Date(), dayCount);
   return slots;
 };
@@ -63,28 +64,22 @@ export class BookingDatesFormComponent extends Component {
   // default handleSubmit function.
   handleFormSubmit(e) {
     const { startDate, endDate, hourStart, hourEnd, numberPerson } = e || {};
-    if (!startDate) {
-      //e.preventDefault();      
+    if (!startDate) {          
       this.setState({ focusedInput: START_DATE });
       return false;
-    } else if (!endDate) {
-      //e.preventDefault();
+    } else if (!endDate) {      
       this.setState({ focusedInput: END_DATE });
       return false;
-    } else if (!hourStart) {
-      //e.preventDefault();
+    } else if (!hourStart) {      
       this.setState({ focusedInput: START_HOUR });
       return false;
-    } else if (!hourEnd) {
-      //e.preventDefault();
+    } else if (!hourEnd) {    
       this.setState({ focusedInput: END_HOUR });
       return false;
-    } else if (!numberPerson) {
-      //e.preventDefault();
+    } else if (!numberPerson) {    
       this.setState({ focusedInput: NUMBER_PERSON });
       return false;
-    }else {
-      //quantity
+    }else {      
       // //set time of day => 0
       if( startDate && endDate ){          
         startDate.date.setHours(0,0);
@@ -158,13 +153,13 @@ export class BookingDatesFormComponent extends Component {
                             
           // EDIT DATE
           //INPUT startDate FIRST (don't have endDate)
-          if(values.startDate && !values.endDate){
+          if(values.startDate && moment(values.startDate.date,"MM DD YYYY h:mm:ss", true).isValid() && !values.endDate){                  
             form.change("endDate", { date: new Date(moment(values.startDate.date).add(1, "days")) });
             this.startValue = moment(values.startDate.date).diff(moment(), "days");                        
           }
 
           //INPUT endDay FIRST
-          if (!values.startDate && values.endDate) {
+          if (!values.startDate && values.endDate && moment(values.endDate.date,"MM DD YYYY h:mm:ss", true).isValid()) {
             //nếu endDay <= curent => reset startDay và endDay else startDay < endDay 1 ngày
             if (moment(values.endDate.date).diff(moment(), "days") <= 0) {
               form.change("startDate", { date: new Date(moment()) });
@@ -223,6 +218,7 @@ export class BookingDatesFormComponent extends Component {
 
               //const sharpHour24 = `${i >= 10 ? i : `0${i}`}:00`;
               const sharpHourHuman = date.clone().add(i, 'hours').format(HOUR_FORMAT);
+            
               const optionSharpHour = (
                 <option key={sharpHour24} value={sharpHour24}>
                   {sharpHourHuman}
@@ -266,10 +262,13 @@ export class BookingDatesFormComponent extends Component {
           // for customized payment processes.
 
           //the same day but time
-          if(startDate && endDate && hourStart && hourEnd){      
+          if(startDate && endDate && hourStart && hourEnd){
             const timeStart = hourStart.split(":");
             const timeEnd = hourEnd.split(":");
-            if(moment(startDate.date).diff(moment(endDate.date), "days") === 0 && (timeStart[0] > timeEnd[0] || ( timeStart[0] === timeEnd[0] && timeStart[1] > timeEnd[1]))){
+            if(moment(startDate.date).diff(moment(endDate.date), "days") === 0 &&
+              (timeStart[0] > timeEnd[0] || ( timeStart[0] === timeEnd[0] && 
+              timeStart[1] > timeEnd[1])))
+            {
               const timeStart = hourStart.split(":");
               const hour = (parseInt(timeStart[0])+1).toString();
               const hourValue = hour.length === 2 ? hour +":"+ timeStart[1] : "0" + hour + ":" + timeStart[1];
@@ -277,14 +276,21 @@ export class BookingDatesFormComponent extends Component {
             }
           }
 
-          //quantity
+          //quantity        
           //set time of day => 0
-          if( startDate && endDate ){          
+          if( startDate && endDate && 
+            moment(values.startDate.date,"MM DD YYYY h:mm:ss", true).isValid() &&
+            moment(values.endDate.date,"MM DD YYYY h:mm:ss", true).isValid())
+          {          
             startDate.date.setHours(0,0);
             endDate.date.setHours(0,0);
           }
           //get timeDate
-          const timeDiff = startDate && endDate ? moment(endDate.date).diff(moment(startDate.date)) : null;
+          const timeDiff = startDate && endDate &&
+            moment(values.startDate.date,"MM DD YYYY h:mm:ss", true).isValid() && 
+            moment(values.endDate.date,"MM DD YYYY h:mm:ss", true).isValid() 
+            ? moment(endDate.date).diff(moment(startDate.date)) : null;
+
           const timeDuration = timeDiff || timeDiff === 0 ? moment.duration(timeDiff) : null;          
           //get time          
           const timeEnd = hourEnd ? hourEnd.split(":") : null;
@@ -302,7 +308,7 @@ export class BookingDatesFormComponent extends Component {
           }
 
           const bookingData =
-            quantity
+            quantity && numberPerson > 0
               ? {
                 unitType,
                 unitPrice,
@@ -334,6 +340,7 @@ export class BookingDatesFormComponent extends Component {
               <div className={css.timeContainer}>
                 <div className={css.timeItem}>
                   <FieldDateInput
+                    type="date"
                     className={classDate}
                     name='startDate'
                     useMobileMargins={false}
@@ -345,11 +352,11 @@ export class BookingDatesFormComponent extends Component {
                     timeSlots={createAvailableTimeSlots(90)}
                   />
                   <FieldSelect
-                    className={css.hourBook}
-                    
+                    className={css.hourBook}                    
                     id={"hourStart"}
                     name={"hourStart"}
                     label={bookingTimeStartLabel}
+                    validate= {required('Required')}
                     parse={value => {                        
                       return value && value.length > 0 ? value : null;
                     }}
@@ -362,6 +369,7 @@ export class BookingDatesFormComponent extends Component {
                 </div>
                 <div className={css.timeItem}>                  
                   <FieldDateInput
+                    type="date"                    
                     className={css.dateBook}
                     name='endDate'
                     useMobileMargins={false}
@@ -376,7 +384,8 @@ export class BookingDatesFormComponent extends Component {
                     className={css.hourBook} 
                     id={"hourEnd"}
                     name={"hourEnd"}
-                    label={bookingTimeEndLabel}                    
+                    label={bookingTimeEndLabel}   
+                    validate= {required('Required')}
                     parse={value => {                                                
                       return value && value.length > 0 ? value : null;
                     }}
@@ -393,12 +402,9 @@ export class BookingDatesFormComponent extends Component {
                     id={"numberPerson"}
                     label={bookingNumberPerson}
                     name="numberPerson"                    
-                    type="number"
-                    placeholder="0"
-                    parse={value => {                                                
-                      return value && value > 0 ? value : null;
-                    }}
-                    validate={required('This field is required')}
+                    type="number"                    
+                    placeholder="0"                    
+                    validate={composeValidators(required("This field is required or not valid"),bookingPerson("Person is not valid"))}                    
                   />
                 </div>
               </div>

@@ -270,8 +270,7 @@ export class ListingPageComponent extends Component {
     );
 
     const bookingTitle = (
-      //<FormattedMessage id="ListingPage.bookingTitle" values={{ title: richTitle }} />
-      <FormattedMessage id="ListingPage.bookingTitle" />
+      <FormattedMessage id="ListingPage.bookingTitle" values={{ title: richTitle }} />
     );
     const bookingSubTitle = intl.formatMessage({ id: 'ListingPage.bookingSubTitle' });
 
@@ -564,13 +563,6 @@ ListingPageComponent.propTypes = {
 };
 
 const mapStateToProps = state => {  
-  // const objecBooking = state.EditListingPage.availabilityCalendar;
-  // for (let key in objecBooking) {
-  //   if (objecBooking.hasOwnProperty(key)) {
-  //     console.log(key + " -> " + objecBooking[key]);
-  //   }
-  // }
-
   const { isAuthenticated } = state.Auth;
   const {
     showListingError,

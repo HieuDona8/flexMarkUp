@@ -333,7 +333,7 @@
   "ListingCard.unsupportedPrice": "({currency})",
   "ListingCard.unsupportedPriceTitle": "Unsupported currency ({currency})",
   "ListingPage.bookingSubTitle": "Start by choosing your dates.",
-  "ListingPage.bookingTitle": "Book Hyundai Elantra 2017",
+  "ListingPage.bookingTitle": "Book {title}",
   "ListingPage.closedListing": "This listing has been closed and can't be booked.",
   "ListingPage.contactUser": "Contact",
   "ListingPage.descriptionTitle": "About this sauna",
