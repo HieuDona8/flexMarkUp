@@ -17,6 +17,7 @@ import {
   TRANSITION_CUSTOMER_CANCEL_REFUND,
   TRANSITION_CUSTOMER_CANCEL_NON_REFUND,
   TRANSITION_CUSTOMER_DECLINE,
+  TRANSITION_PROVIDER_CANCEL_REFUND_48_HOUR,
 } from '../../util/transaction';
 import * as log from '../../util/log';
 import {
@@ -399,7 +400,13 @@ export const declineSale = (id, isCustomer) => (dispatch, getState, sdk) => {
 };
 
 export const cancelSale = (id, isCustomer, transaction) => (dispatch, getState, sdk) => {  
-  const typeCancel = isCustomer ? txIsAfter48hour(transaction) ? TRANSITION_CUSTOMER_CANCEL_NON_REFUND : TRANSITION_CUSTOMER_CANCEL_REFUND : TRANSITION_PROVIDER_CANCEL_REFUND;
+  const typeCancel = isCustomer 
+    ? txIsAfter48hour(transaction) 
+      ? TRANSITION_CUSTOMER_CANCEL_NON_REFUND 
+      : TRANSITION_CUSTOMER_CANCEL_REFUND 
+    : txIsAfter48hour(transaction) 
+      ? TRANSITION_PROVIDER_CANCEL_REFUND_48_HOUR
+      : TRANSITION_PROVIDER_CANCEL_REFUND;
   if (cancelInProgress(getState())) {
     return Promise.reject(new Error('Cancel already in progress'));
   }

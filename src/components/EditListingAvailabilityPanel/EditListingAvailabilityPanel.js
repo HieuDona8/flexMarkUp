@@ -21,7 +21,7 @@ const EditListingAvailabilityPanel = props => {
     panelUpdated,
     updateInProgress,
     errors,
-  } = props;
+  } = props;  
 
   const classes = classNames(rootClassName || css.root, className);
   const currentListing = ensureOwnListing(listing);
@@ -30,19 +30,18 @@ const EditListingAvailabilityPanel = props => {
     type: 'availability-plan/time',
     timezone: 'Asia/Ho_Chi_Minh',
     entries: [
-      { dayOfWeek: 'mon', seats: 2 , startTime: '00:00', endTime: '00:00'},
-      { dayOfWeek: 'tue', seats: 2 , startTime: '00:00', endTime: '00:00'},
-      { dayOfWeek: 'wed', seats: 2 , startTime: '00:00', endTime: '00:00'},
-      { dayOfWeek: 'thu', seats: 2 , startTime: '00:00', endTime: '00:00'},
-      { dayOfWeek: 'fri', seats: 2 , startTime: '00:00', endTime: '00:00'},
-      { dayOfWeek: 'sat', seats: 2 , startTime: '00:00', endTime: '00:00'},
-      { dayOfWeek: 'sun', seats: 2 , startTime: '00:00', endTime: '00:00'},
+      { dayOfWeek: 'mon', seats: 2 , startTime: '00:00', endTime: '00:00' },
+      { dayOfWeek: 'tue', seats: 2 , startTime: '00:00', endTime: '00:00' },
+      { dayOfWeek: 'wed', seats: 2 , startTime: '00:00', endTime: '00:00' },
+      { dayOfWeek: 'thu', seats: 2 , startTime: '00:00', endTime: '00:00' },
+      { dayOfWeek: 'fri', seats: 2 , startTime: '00:00', endTime: '00:00' },
+      { dayOfWeek: 'sat', seats: 2 , startTime: '00:00', endTime: '00:00' },
+      { dayOfWeek: 'sun', seats: 2 , startTime: '00:00', endTime: '00:00' },
     ],    
   };
   
-  const availabilityPlan = defaultAvailabilityPlan;
   //const availabilityPlan = defaultAvailabilityPlan;
-
+  const availabilityPlan = currentListing.attributes.availabilityPlan || defaultAvailabilityPlan;
   return (
     <div className={classes}>
       <h1 className={css.title}>

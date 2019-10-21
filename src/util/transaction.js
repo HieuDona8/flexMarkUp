@@ -17,8 +17,8 @@ import { ensureTransaction } from './data';
 // A customer can also initiate a transaction with an enquiry, and
 // then transition that with a request.
 export const TRANSITION_ENQUIRE = 'transition/enquire';
-export const TRANSITION_ENQUIRY_FIRST_TIME = 'transition/enquiry-first-time';
-export const TRANSITION_ENQUIRY = 'transition/enquiry';
+export const TRANSITION_ENQUIRY_FIRST_TIME = 'transition/request-after-enquiry-first-time';
+export const TRANSITION_ENQUIRY = 'transition/request-after-enquiry';
 
 export const TRANSITION_REQUEST = 'transition/request';
 export const TRANSITION_REQUEST_FIRST_TIME = 'transition/request-first-time';
@@ -41,8 +41,8 @@ export const TRANSITION_ACCEPT = 'transition/accept';
 export const TRANSITION_PROVIDER_CANCEL_REFUND = 'transition/provider-cancel-refund';
 export const TRANSITION_CUSTOMER_CANCEL_REFUND = 'transition/customer-cancel-refund';
 
-//
 export const TRANSITION_MARK_TRANSACTION_IS_AFTER_48_HOURS = 'transition/mark-transaction-is-after-48-hours';
+export const TRANSITION_PROVIDER_CANCEL_REFUND_48_HOUR="transition/provider-cancel-refund-48-hour";
 
 export const TRANSITION_CUSTOMER_CANCEL_NON_REFUND = 'transition/customer-cancel-non-refund';
 
@@ -170,6 +170,7 @@ const stateDescription = {
     [STATE_AFTER_48_HOURS]:{
       on: {
         [TRANSITION_CUSTOMER_CANCEL_NON_REFUND]: STATE_CANCELED,
+        [TRANSITION_PROVIDER_CANCEL_REFUND_48_HOUR]: STATE_CANCELED,
       }
     },
     [STATE_CANCELED]: {},

@@ -246,7 +246,7 @@ EditListingPageComponent.propTypes = {
 };
 
 const mapStateToProps = state => {
-  const page = state.EditListingPage;
+  const page = state.EditListingPage;  
   const { createStripeAccountInProgress, createStripeAccountError } = state.stripe;
   const { currentUser } = state.user;
 

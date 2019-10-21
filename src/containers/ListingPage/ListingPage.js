@@ -41,7 +41,13 @@ import {
 } from '../../components';
 import { TopbarContainer, NotFoundPage } from '../../containers';
 
-import { sendEnquiry, loadData, setInitialValues, isFirstBooking } from './ListingPage.duck';
+import { 
+  sendEnquiry, 
+  loadData, 
+  setInitialValues, 
+  isFirstBooking,
+  myRequestFetchBookings,
+} from './ListingPage.duck';
 import SectionImages from './SectionImages';
 import SectionAvatar from './SectionAvatar';
 import SectionCapacity from './SectionCapacity';
@@ -99,7 +105,7 @@ export class ListingPageComponent extends Component {
       if(res){
         this.setState({
           isFirstBooking: true
-        })
+        });
       }
     });
   }
@@ -557,7 +563,14 @@ ListingPageComponent.propTypes = {
   capacityConfig: array,
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = state => {  
+  // const objecBooking = state.EditListingPage.availabilityCalendar;
+  // for (let key in objecBooking) {
+  //   if (objecBooking.hasOwnProperty(key)) {
+  //     console.log(key + " -> " + objecBooking[key]);
+  //   }
+  // }
+
   const { isAuthenticated } = state.Auth;
   const {
     showListingError,
@@ -606,7 +619,7 @@ const mapDispatchToProps = dispatch => ({
   callSetInitialValues: (setInitialValues, values) => dispatch(setInitialValues(values)),
   onSendEnquiry: (listingId, message) => dispatch(sendEnquiry(listingId, message)),
   onInitializeCardPaymentData: () => dispatch(initializeCardPaymentData()),
-  checkFirstBooking: () => dispatch(isFirstBooking()),
+  checkFirstBooking: () => dispatch(isFirstBooking()),  
 });
 
 // Note: it is important that the withRouter HOC is **outside** the

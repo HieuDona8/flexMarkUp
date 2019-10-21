@@ -2,6 +2,14 @@ import React, { Component } from 'react';
 import { string, bool, arrayOf } from 'prop-types';
 import { compose } from 'redux';
 import { Form as FinalForm } from 'react-final-form';
+import { 
+  required, 
+  bookingDatesRequired, 
+  composeValidators, 
+  bookingDateRequired, 
+} from '../../util/validators';
+import { createTimeSlots } from '../../util/test-data';
+
 import { FormattedMessage, intlShape, injectIntl } from '../../util/reactIntl';
 import classNames from 'classnames';
 import moment from 'moment';
@@ -26,7 +34,12 @@ import EstimatedBreakdownMaybe from './EstimatedBreakdownMaybe';
 
 import css from './BookingDatesForm.css';
 
-//const identity = v => v;
+const identity = v => v;
+
+const createAvailableTimeSlots = (dayCount) => {
+  const slots = createTimeSlots(new Date(), dayCount);
+  return slots;
+};
 
 export class BookingDatesFormComponent extends Component {
   constructor(props) {
@@ -138,10 +151,11 @@ export class BookingDatesFormComponent extends Component {
             unitType,
             values,            
             fetchTimeSlotsError,
+            timeSlots,
             form
           } = fieldRenderProps;
           const { startDate, endDate, hourStart, hourEnd, numberPerson } = values && values.startDate && values.hourStart && values.hourEnd ? values : {};
-          
+                            
           // EDIT DATE
           //INPUT startDate FIRST (don't have endDate)
           if(values.startDate && !values.endDate){
@@ -325,7 +339,10 @@ export class BookingDatesFormComponent extends Component {
                     useMobileMargins={false}
                     id="startBookingDate"
                     label={bookingStartLabel}
-                    placeholderText={moment().format('DD/MM/YYYY')}                                    
+                    placeholderText={moment().format('DD/MM/YYYY')}     
+                    format={identity}
+                    validate= {composeValidators(required('Required'), bookingDateRequired('Date is not valid'))}       
+                    timeSlots={createAvailableTimeSlots(90)}
                   />
                   <FieldSelect
                     className={css.hourBook}
@@ -333,7 +350,7 @@ export class BookingDatesFormComponent extends Component {
                     id={"hourStart"}
                     name={"hourStart"}
                     label={bookingTimeStartLabel}
-                    parse={(value, name) => {                        
+                    parse={value => {                        
                       return value && value.length > 0 ? value : null;
                     }}
                   >
@@ -351,14 +368,16 @@ export class BookingDatesFormComponent extends Component {
                     id={bookingEndLabel}     
                     label={bookingEndLabel}
                     placeholderText={moment().add(1, "day").format('DD/MM/YYYY')}
+                    format={identity}
+                    validate= {composeValidators(required('Required'), bookingDateRequired('Date is not valid'))}
+                    timeSlots={createAvailableTimeSlots(90)}
                   />                                   
                   <FieldSelect
                     className={css.hourBook} 
                     id={"hourEnd"}
                     name={"hourEnd"}
-                    label={bookingTimeEndLabel}
-                    //validate={hourStartRequired}
-                    parse={(value, name) => {                                                
+                    label={bookingTimeEndLabel}                    
+                    parse={value => {                                                
                       return value && value.length > 0 ? value : null;
                     }}
                   >
@@ -376,6 +395,10 @@ export class BookingDatesFormComponent extends Component {
                     name="numberPerson"                    
                     type="number"
                     placeholder="0"
+                    parse={value => {                                                
+                      return value && value > 0 ? value : null;
+                    }}
+                    validate={required('This field is required')}
                   />
                 </div>
               </div>

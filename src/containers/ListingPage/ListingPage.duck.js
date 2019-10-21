@@ -24,6 +24,8 @@ import {
   LISTING_PAGE_DRAFT_VARIANT,
   LISTING_PAGE_PENDING_APPROVAL_VARIANT,
 } from '../../util/urlHelpers';
+import { monthIdStringInUTC } from '../../util/dates';
+
 import { fetchCurrentUser, fetchCurrentUserHasOrdersSuccess } from '../../ducks/user.duck';
 
 const { UUID } = sdkTypes;
@@ -283,7 +285,62 @@ export const sendEnquiry = (listingId, message) => (dispatch, getState, sdk) => 
     });
 };
 
-export const loadData = (params, search) => dispatch => {
+//my request:
+export const FETCH_BOOKINGS_REQUEST = 'app/EditListingPage/FETCH_BOOKINGS_REQUEST';
+export const FETCH_BOOKINGS_SUCCESS = 'app/EditListingPage/FETCH_BOOKINGS_SUCCESS';
+export const FETCH_BOOKINGS_ERROR = 'app/EditListingPage/FETCH_BOOKINGS_ERROR';
+
+
+const requestAction = actionType => params => ({ type: actionType, payload: { params } });
+const successAction = actionType => result => ({ type: actionType, payload: result.data });
+const errorAction = actionType => error => ({ type: actionType, payload: error, error: true });
+
+export const fetchBookingsRequest = requestAction(FETCH_BOOKINGS_REQUEST);
+export const fetchBookingsSuccess = successAction(FETCH_BOOKINGS_SUCCESS);
+export const fetchBookingsError = errorAction(FETCH_BOOKINGS_ERROR);
+
+//time 2
+//const isPast = date => !isInclusivelyAfterDay(date, TODAY_MOMENT);
+//const isAfterEndOfRange = date => !isInclusivelyBeforeDay(date, END_OF_RANGE_MOMENT);
+//const isAfterEndOfBookingRange = date => !isInclusivelyBeforeDay(date, END_OF_BOOKING_RANGE_MOMENT);
+const momentToUTCDate = dateMoment =>
+  dateMoment
+    .clone()
+    .utc()
+    .add(dateMoment.utcOffset(), 'minutes')
+    .toDate();
+
+export const myRequestFetchBookings = fetchParams => (dispatch, getState, sdk) => {
+  const listingId  = fetchParams;
+  //caculatur: 
+  //star: curDay
+  //end: plus 90 day from curday
+  const starMoment = moment();
+  const start = momentToUTCDate(starMoment);
+  const endMoment = moment().add(90, "days");
+  const end = momentToUTCDate(endMoment);
+
+  //const startMoment = isPast(monthMoment) ? TODAY_MOMENT : monthMoment;
+  //const start = momentToUTCDate(startMoment);
+  const state = ['pending', 'accepted'].join(',');
+  // When using time-based process, you might want to deal with local dates using monthIdString
+  const monthId = monthIdStringInUTC(start);
+
+  dispatch(fetchBookingsRequest({ ...fetchParams, monthId }));
+
+  return sdk.bookings
+    .query({ listingId, start, end, state }, { expand: true })
+    .then(response => {
+      const bookings = denormalisedResponseEntities(response);      
+      return dispatch(fetchBookingsSuccess({ data: { monthId, bookings } }));
+    })
+    .catch(e => {
+      return dispatch(fetchBookingsError({ monthId, error: storableError(e) }));
+    });
+};
+
+
+export const loadData = (params, search) => dispatch => {  
   const listingId = new UUID(params.id);
 
   const ownListingVariants = [LISTING_PAGE_DRAFT_VARIANT, LISTING_PAGE_PENDING_APPROVAL_VARIANT];
@@ -291,11 +348,12 @@ export const loadData = (params, search) => dispatch => {
     return dispatch(showListing(listingId, true));
   }
 
-  if (config.enableAvailability) {
+  if (config.enableAvailability) {    
     return Promise.all([
       dispatch(showListing(listingId)),
       dispatch(fetchTimeSlots(listingId)),
       dispatch(fetchReviews(listingId)),
+      dispatch(myRequestFetchBookings(listingId))
     ]);
   } else {
     return Promise.all([dispatch(showListing(listingId)), dispatch(fetchReviews(listingId))]);

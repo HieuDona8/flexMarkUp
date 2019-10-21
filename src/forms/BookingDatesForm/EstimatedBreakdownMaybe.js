@@ -94,7 +94,7 @@ const estimatedTransaction = (unitType, bookingStart, bookingEnd, unitPrice, qua
     attributes: {
       createdAt: now,
       lastTransitionedAt: now,
-      processVersion: 10,
+      processVersion: 17,
       lastTransition: bookingType,
       payinTotal: totalPrice,
       payoutTotal: totalPrice,
