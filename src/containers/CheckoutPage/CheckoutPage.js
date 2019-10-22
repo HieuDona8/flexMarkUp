@@ -378,6 +378,7 @@ export class CheckoutPageComponent extends Component {
           ? { setupPaymentMethodForSaving: true }
           : {};
 
+    console.log("my Optionnalpyament: ", optionalPaymentParams);
     const { quantity } = handlePaymentParams.pageData.bookingData || null;
     const orderParams = {
       listingId: pageData.listing.id,
@@ -387,10 +388,11 @@ export class CheckoutPageComponent extends Component {
       ...optionalPaymentParams,
     };
 
+    console.log("my Param: ", orderParams);
     return handlePaymentIntentCreation(orderParams);
   }
 
-  handleSubmit(values) {
+  handleSubmit(values) {    
     if (this.state.submitting) {
       return;
     }
@@ -588,8 +590,8 @@ export class CheckoutPageComponent extends Component {
 
     // Show breakdown only when speculated transaction and booking are loaded
     // (i.e. have an id)
-    const tx = existingTransaction.booking ? existingTransaction : speculatedTransaction;    
-    const txBooking = ensureBooking(tx.booking);
+    const tx = existingTransaction.booking ? existingTransaction : speculatedTransaction;
+    const txBooking = ensureBooking(tx.booking);    
     const breakdown =
       tx.id && txBooking.id ? (
         <BookingBreakdown

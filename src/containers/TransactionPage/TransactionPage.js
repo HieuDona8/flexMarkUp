@@ -82,6 +82,7 @@ export const TransactionPageComponent = props => {
     processTransitions,
     callSetInitialValues,
     onInitializeCardPaymentData,
+    isFirstBooking,
   } = props;
 
   const currentTransaction = ensureTransaction(transaction);
@@ -99,7 +100,7 @@ export const TransactionPageComponent = props => {
 
     // Clear previous Stripe errors from store if there is any
     onInitializeCardPaymentData();
-
+        
     // Redirect to CheckoutPage
     history.push(
       createResourceLocatorString(
@@ -132,22 +133,21 @@ export const TransactionPageComponent = props => {
         bookingEnd: dateFromAPIToLocalNoon(currentBooking.attributes.end),
       },
     };
-
+    
     redirectToCheckoutPageWithInitialValues(initialValues, currentListing);
   }
 
   // Customer can create a booking, if the tx is in "enquiry" state.
   const handleSubmitBookingRequest = values => {
-    const { bookingDates, ...bookingData } = values;
-
+    const { startDate, endDate, bookingDates, ...bookingData } = values;    
     const initialValues = {
       listing: currentListing,
       // enquired transaction should be passed to CheckoutPage
       transaction: currentTransaction,
       bookingData,
       bookingDates: {
-        bookingStart: bookingDates.startDate,
-        bookingEnd: bookingDates.endDate,
+        bookingStart: startDate.date,
+        bookingEnd: endDate.date,
       },
       confirmPaymentError: null,
     };
@@ -252,6 +252,7 @@ export const TransactionPageComponent = props => {
       onSubmitBookingRequest={handleSubmitBookingRequest}
       timeSlots={timeSlots}
       fetchTimeSlotsError={fetchTimeSlotsError}
+      isFirstBooking={isFirstBooking}
     />
   ) : (
     loadingOrFailedFetching
@@ -362,7 +363,9 @@ const mapStateToProps = state => {
     timeSlots,
     fetchTimeSlotsError,
     processTransitions,
+    fetchFirstBookingSuccess,
   } = state.TransactionPage;
+
   const { currentUser } = state.user;
 
   const transactions = getMarketplaceEntities(state, transactionRef ? [transactionRef] : []);
@@ -393,6 +396,7 @@ const mapStateToProps = state => {
     timeSlots,
     fetchTimeSlotsError,
     processTransitions,
+    isFirstBooking: fetchFirstBookingSuccess,
   };
 };
 

@@ -7,6 +7,9 @@ import { Avatar, InlineTextButton, ReviewRating, UserDisplayName } from '../../c
 import { formatDate } from '../../util/dates';
 import { ensureTransaction, ensureUser, ensureListing } from '../../util/data';
 import {
+  TRANSITION_ENQUIRE,
+  TRANSITION_ENQUIRY_FIRST_TIME,
+  TRANSITION_ENQUIRY,
   TRANSITION_ACCEPT,
   TRANSITION_COMPLETE,
   TRANSITION_DECLINE,
@@ -120,6 +123,25 @@ const resolveTransitionMessage = (
   const displayName = otherUsersName;
 
   switch (currentTransition) {
+    case TRANSITION_ENQUIRE:
+      return isOwnTransition ? (
+        <FormattedMessage id="ActivityFeed.ownTransitionEnquiry" values={{ listingTitle }} />
+      ) : (
+        <FormattedMessage
+          id="ActivityFeed.transitionEnquiry"
+          values={{ displayName, listingTitle }}
+        />
+      ); 
+    case TRANSITION_ENQUIRY_FIRST_TIME:
+    case TRANSITION_ENQUIRY:
+      return isOwnTransition ? (
+        <FormattedMessage id="ActivityFeed.ownTransitionAfterEnquiry" values={{ listingTitle }} />
+      ) : (
+        <FormattedMessage
+          id="ActivityFeed.transitionAfterEnquiry"
+          values={{ displayName, listingTitle }}
+        />
+      ); 
     case TRANSITION_REQUEST_FIRST_TIME:
     case TRANSITION_REQUEST:
       return isOwnTransition ? (

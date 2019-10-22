@@ -2,11 +2,11 @@ import pick from 'lodash/pick';
 import config from '../../config';
 import { denormalisedResponseEntities } from '../../util/data';
 import { storableError } from '../../util/errors';
-import {
-  TRANSITION_REQUEST_PAYMENT,
+import {  
+  TRANSITION_ENQUIRY_FIRST_TIME,
+  TRANSITION_ENQUIRY,
   TRANSITION_REQUEST_FIRST_TIME,
-  TRANSITION_REQUEST,
-  TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY,
+  TRANSITION_REQUEST,  
   TRANSITION_CONFIRM_PAYMENT,
   TRANSITION_ACCEPT,
   TRANSITION_COMPLETE,
@@ -172,11 +172,13 @@ export const stripeCustomerError = e => ({
 
 export const initiateOrder = (orderParams, transactionId) => async(dispatch, getState, sdk) => {
   dispatch(initiateOrderRequest());
-
+  let typeBookingAfterEnquiry = TRANSITION_ENQUIRY_FIRST_TIME;
   let typeBooking = TRANSITION_REQUEST_FIRST_TIME;
   await sdk.transactions.query({
     only: "order",
     lastTransitions: [
+      TRANSITION_ENQUIRY_FIRST_TIME,
+      TRANSITION_ENQUIRY,
       TRANSITION_REQUEST_FIRST_TIME, 
       TRANSITION_REQUEST, 
       TRANSITION_CONFIRM_PAYMENT,
@@ -193,20 +195,21 @@ export const initiateOrder = (orderParams, transactionId) => async(dispatch, get
   }).then(res => {
     if(res.data.data.length > 0){      
       typeBooking = TRANSITION_REQUEST;
+      typeBookingAfterEnquiry = TRANSITION_ENQUIRY;
     }
   });
-
+  
   const bodyParams = transactionId
     ? {
-        id: transactionId,
-        transition: TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY,
-        params: orderParams,
-      }
+      id: transactionId,
+      transition: typeBookingAfterEnquiry,
+      params: orderParams,
+    }
     : {
-        processAlias: config.bookingProcessAlias,
-        transition: typeBooking,
-        params: orderParams,
-      };
+      processAlias: config.bookingProcessAlias,
+      transition: typeBooking,
+      params: orderParams,
+    };
   const queryParams = {
     include: ['booking', 'provider'],
     expand: true,
@@ -299,6 +302,8 @@ export const speculateTransaction = params => (dispatch, getState, sdk) => {
   sdk.transactions.query({
     only: "order",
     lastTransitions: [
+      TRANSITION_ENQUIRY_FIRST_TIME,
+      TRANSITION_ENQUIRY,
       TRANSITION_REQUEST_FIRST_TIME, 
       TRANSITION_REQUEST, 
       TRANSITION_CONFIRM_PAYMENT,

@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import { array, arrayOf, bool, func, number, string } from 'prop-types';
 import { FormattedMessage, injectIntl, intlShape } from '../../util/reactIntl';
 import classNames from 'classnames';
-import {
-  TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY,
+import {  
+  TRANSITION_ENQUIRY_FIRST_TIME,
+  TRANSITION_ENQUIRY,
   txIsAccepted,
   txIsCanceled,
   txIsDeclined,
@@ -198,6 +199,7 @@ export class TransactionPanelComponent extends Component {
       timeSlots,
       fetchTimeSlotsError,
       nextTransitions,
+      isFirstBooking,
     } = this.props;
 
     const currentTransaction = ensureTransaction(transaction);
@@ -223,8 +225,10 @@ export class TransactionPanelComponent extends Component {
             return transition.attributes.name;
           })
           : [];
+        
+        const typeNextTransition = isFirstBooking ? TRANSITION_ENQUIRY_FIRST_TIME : TRANSITION_ENQUIRY;
         const hasCorrectNextTransition =
-          transitions.length > 0 && transitions.includes(TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY);
+          transitions.length > 0 && transitions.includes(typeNextTransition);        
         return {
           headingState: HEADING_ENQUIRED,
           showBookingPanel: isCustomer && !isProviderBanned && hasCorrectNextTransition,
@@ -368,7 +372,7 @@ export class TransactionPanelComponent extends Component {
     );
 
     const classes = classNames(rootClassName || css.root, className);
-
+    
     return (
       <div className={classes}>
         <div className={css.container}>

@@ -18,6 +18,17 @@ import {
   TRANSITION_CUSTOMER_CANCEL_NON_REFUND,
   TRANSITION_CUSTOMER_DECLINE,
   TRANSITION_PROVIDER_CANCEL_REFUND_48_HOUR,
+  TRANSITION_REQUEST_FIRST_TIME, 
+  TRANSITION_REQUEST, 
+  TRANSITION_CONFIRM_PAYMENT,
+  TRANSITION_COMPLETE,
+  TRANSITION_REVIEW_1_BY_CUSTOMER,
+  TRANSITION_REVIEW_1_BY_PROVIDER,
+  TRANSITION_REVIEW_2_BY_CUSTOMER,
+  TRANSITION_REVIEW_2_BY_PROVIDER,
+  TRANSITION_EXPIRE_CUSTOMER_REVIEW_PERIOD,
+  TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD,
+  TRANSITION_EXPIRE_REVIEW_PERIOD,
 } from '../../util/transaction';
 import * as log from '../../util/log';
 import {
@@ -77,6 +88,10 @@ export const FETCH_TIME_SLOTS_ERROR = 'app/TransactionPage/FETCH_TIME_SLOTS_ERRO
 // ================ Reducer ================ //
 
 const initialState = {
+  fetchFirstBookingSuccess: false,
+  fetchFirstBookingError: null,
+  fetchFirstBookingRequest: null,
+
   fetchTransactionInProgress: false,
   fetchTransactionError: null,
   transactionRef: null,
@@ -120,8 +135,15 @@ export default function checkoutPageReducer(state = initialState, action = {}) {
     case SET_INITAL_VALUES:
       return { ...initialState, ...payload };
 
+    case FETCH_FIRST_BOOKING_SUCCESS:
+      return { ...state, fetchFirstBookingSuccess: payload, fetchFirstBookingRequest: null, fetchFirstBooingError: null };
+    case FETCH_FIRST_BOOKING_REQUEST:
+      return { ...state, fetchFirstBookingSuccess: null, fetchFirstBookingRequest: true, fetchFirstBooingError: null };
+    case FETCH_FIRST_BOOKING_ERROR:
+      return { ...state, fetchFirstBookingSuccess: null, fetchFirstBookingRequest: null, fetchFirstBooingError: payload };
+
     case FETCH_TRANSACTION_REQUEST:
-      return { ...state, fetchTransactionInProgress: true, fetchTransactionError: null };
+      return { ...state, fetchTransactionInProgress: true, fetchTransactionError: null, fetchFirstBookingRequest: null };
     case FETCH_TRANSACTION_SUCCESS: {
       const transactionRef = { id: payload.data.data.id, type: 'transaction' };
       return { ...state, fetchTransactionInProgress: false, transactionRef };
@@ -652,12 +674,52 @@ export const fetchNextTransitions = id => (dispatch, getState, sdk) => {
 
   return sdk.processTransitions
     .query({ transactionId: id })
-    .then(res => {
+    .then(res => {      
       dispatch(fetchTransitionsSuccess(res.data.data));
     })
     .catch(e => {
       dispatch(fetchTransitionsError(storableError(e)));
     });
+};
+
+//of my reduce
+export const FETCH_FIRST_BOOKING_REQUEST = 'app/TransactionPage/FETCH_FIRST_BOOKING_REQUEST';
+export const FETCH_FIRST_BOOKING_SUCCESS = 'app/TransactionPage/FETCH_FIRST_BOOKING_SUCCESS';
+export const FETCH_FIRST_BOOKING_ERROR = 'app/TransactionPage/FETCH_FIRST_BOOKING_ERROR';
+
+export const fetchFirstBookingRequest = () => ({ type: FETCH_FIRST_BOOKING_REQUEST });
+export const fetchFirstBookingSuccess = result => ({ type: FETCH_FIRST_BOOKING_SUCCESS, payload: result });
+export const fetchFirstBooingError = error =>  ({ type: FETCH_FIRST_BOOKING_ERROR, error: true, payload: error });
+//export const fetchReviewsError = error => ({
+
+export const fetchFirstBooking =() => (dispatch, getState, sdk) =>{  
+  dispatch(fetchFirstBookingRequest());
+  sdk.transactions.query({
+    only: "order",
+    lastTransitions: [
+      TRANSITION_REQUEST_FIRST_TIME, 
+      TRANSITION_REQUEST, 
+      TRANSITION_CONFIRM_PAYMENT,
+      TRANSITION_ACCEPT,
+      TRANSITION_COMPLETE,
+      TRANSITION_REVIEW_1_BY_CUSTOMER,
+      TRANSITION_REVIEW_1_BY_PROVIDER,
+      TRANSITION_REVIEW_2_BY_CUSTOMER,
+      TRANSITION_REVIEW_2_BY_PROVIDER,
+      TRANSITION_EXPIRE_CUSTOMER_REVIEW_PERIOD,
+      TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD,
+      TRANSITION_EXPIRE_REVIEW_PERIOD,
+    ]
+  }).then(res => {
+    if(res.data.data.length === 0){      
+      dispatch(fetchFirstBookingSuccess(true));
+    }else{
+      dispatch(fetchFirstBookingSuccess(false));
+    }
+
+  }).catch(e =>{
+    dispatch(fetchFirstBooingError(e));
+  })
 };
 
 // loadData is a collection of async calls that need to be made
@@ -679,5 +741,6 @@ export const loadData = params => (dispatch, getState) => {
     dispatch(fetchTransaction(txId, txRole)),
     dispatch(fetchMessages(txId, 1)),
     dispatch(fetchNextTransitions(txId)),
+    dispatch(fetchFirstBooking()),
   ]);
 };

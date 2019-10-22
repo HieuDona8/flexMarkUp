@@ -1,4 +1,8 @@
 {
+  "ActivityFeed.ownTransitionEnquiry": "Your enquiry has been sent to { listingTitle }",
+  "ActivityFeed.transitionEnquiry": "{ displayName } has been enquired { listingTitle }.",
+  "ActivityFeed.ownTransitionAfterEnquiry": "You has been requested to book { listingTitle }",
+  "ActivityFeed.transitionAfterEnquiry": "{ displayName } has been requested to book { listingTitle }.",
   "ActivityFeed.deletedListing": "deleted listing",
   "ActivityFeed.leaveAReview": "Leave a review for { displayName }.",
   "ActivityFeed.leaveAReviewSecond": "Leave a review for { displayName } to see their review.",
@@ -7,7 +11,7 @@
   "ActivityFeed.ownTransitionDecline": "You declined the booking request.",
   "ActivityFeed.ownTransitionExpire": "Booking request expired. You did not reply on time.",
   "ActivityFeed.ownTransitionRequest": "You requested to book { listingTitle }.",
-  "ActivityFeed.ownTransitionComfirmPayment": "You booking has been comfirm payment",
+  "ActivityFeed.ownTransitionComfirmPayment": "your booking has been confirmed",
   "ActivityFeed.ownTransitionReview": "You left a review for { displayName }.",
   "ActivityFeed.showOlderMessages": "Show older",
   "ActivityFeed.today": "Today",

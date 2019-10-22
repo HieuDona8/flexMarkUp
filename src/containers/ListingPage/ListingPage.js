@@ -132,15 +132,15 @@ export class ListingPageComponent extends Component {
       },      
       confirmPaymentError: null,
     };
-
+    
     const routes = routeConfiguration();
     // Customize checkout page state with current listing and selected bookingDates
     const { setInitialValues } = findRouteByRouteName('CheckoutPage', routes);
     callSetInitialValues(setInitialValues, initialValues);
-
+    
     // Clear previous Stripe errors from store if there is any
     onInitializeCardPaymentData();
-
+    
     // Redirect to CheckoutPage
     history.push(
       createResourceLocatorString(
