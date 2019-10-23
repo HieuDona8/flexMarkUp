@@ -173,34 +173,11 @@ export const stripeCustomerError = e => ({
 
 /* ================ Thunks ================ */
 
-export const initiateOrder = (orderParams, transactionId) => async(dispatch, getState, sdk) => {
+export const initiateOrder = (orderParams, transactionId) => (dispatch, getState, sdk) => {
+  const { isFirstBooking } = orderParams;  
   dispatch(initiateOrderRequest());
-  let typeBookingAfterEnquiry = TRANSITION_ENQUIRY_FIRST_TIME;
-  let typeBooking = TRANSITION_REQUEST_FIRST_TIME;
-  await sdk.transactions.query({
-    only: "order",
-    lastTransitions: [
-      TRANSITION_ENQUIRY_FIRST_TIME,
-      TRANSITION_ENQUIRY,
-      TRANSITION_REQUEST_FIRST_TIME, 
-      TRANSITION_REQUEST, 
-      TRANSITION_CONFIRM_PAYMENT,
-      TRANSITION_ACCEPT,
-      TRANSITION_COMPLETE,
-      TRANSITION_REVIEW_1_BY_CUSTOMER,
-      TRANSITION_REVIEW_1_BY_PROVIDER,
-      TRANSITION_REVIEW_2_BY_CUSTOMER,
-      TRANSITION_REVIEW_2_BY_PROVIDER,
-      TRANSITION_EXPIRE_CUSTOMER_REVIEW_PERIOD,
-      TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD,
-      TRANSITION_EXPIRE_REVIEW_PERIOD,
-    ]
-  }).then(res => {
-    if(res.data.data.length > 0){      
-      typeBooking = TRANSITION_REQUEST;
-      typeBookingAfterEnquiry = TRANSITION_ENQUIRY;
-    }
-  });
+  const typeBookingAfterEnquiry = isFirstBooking ? TRANSITION_ENQUIRY_FIRST_TIME : TRANSITION_ENQUIRY;
+  const typeBooking = isFirstBooking ? TRANSITION_REQUEST_FIRST_TIME : TRANSITION_REQUEST;
     
   const bodyParams = transactionId
     ? {

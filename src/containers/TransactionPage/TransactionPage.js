@@ -91,8 +91,7 @@ export const TransactionPageComponent = props => {
   const isProviderRole = transactionRole === PROVIDER;
   const isCustomerRole = transactionRole === CUSTOMER;
 
-  const redirectToCheckoutPageWithInitialValues = (initialValues, listing) => {
-    console.log("Data transactinPage: ", initialValues)
+  const redirectToCheckoutPageWithInitialValues = (initialValues, listing) => {    
     const routes = routeConfiguration();
     // Customize checkout page state with current listing and selected bookingDates
     const { setInitialValues } = findRouteByRouteName('CheckoutPage', routes);

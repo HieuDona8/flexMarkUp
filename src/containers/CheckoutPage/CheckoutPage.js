@@ -221,8 +221,9 @@ export class CheckoutPageComponent extends Component {
       onHandleCardPayment,
       onConfirmPayment,
       onSendMessage,
-      onSavePaymentMethod,
+      onSavePaymentMethod,      
     } = this.props;
+
     const {
       pageData,
       speculatedTransaction,
@@ -383,6 +384,7 @@ export class CheckoutPageComponent extends Component {
     
     const { quantity } = handlePaymentParams.pageData.bookingData || null;
     const orderParams = {
+      isFirstBooking: pageData.isFirstBooking,
       listingId: pageData.listing.id,
       bookingStart: tx.booking.attributes.start,
       bookingEnd: tx.booking.attributes.end,
