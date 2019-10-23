@@ -79,31 +79,16 @@ export class BookingDatesFormComponent extends Component {
     } else if (!numberPerson) {    
       this.setState({ focusedInput: NUMBER_PERSON });
       return false;
-    }else {      
-      // //set time of day => 0
-      if( startDate && endDate ){          
-        startDate.date.setHours(0,0);
-        endDate.date.setHours(0,0);
-      }
-      //get timeDate
-      const timeDiff = startDate && endDate ? moment(endDate.date).diff(moment(startDate.date)) : null;
-      const timeDuration = timeDiff || timeDiff === 0 ? moment.duration(timeDiff) : null;          
-      //get time          
-      const timeEnd = hourEnd ? hourEnd.split(":") : null;
-      const timeAddDay = timeEnd && (timeEnd[0] > 0 || timeEnd[1] > 0) ? true : false;        
-      //get day:
-      const days = timeDuration ? timeAddDay ? timeDuration.get("days") + 1 : timeDuration.get("days")  : null;           
-      //daysBetween(startDate.date, endDate.date) : null;
-      const quantity = numberPerson && days ? numberPerson*days : null;          
-      //move time too date          
-      if( quantity ){
-        const timeStart = hourStart.split(":");
-        const timeEnd = hourEnd.split(":");
-        startDate.date.setHours(Number(timeStart[0]),Number(timeStart[1]));
-        endDate.date.setHours(Number(timeEnd[0]),Number(timeEnd[1]));
-      }
-
-      const values ={ ...e, quantity };
+    }else {            
+      const timeDiff = moment(endDate.date).diff(moment(startDate.date));
+      const timeDuration = timeDiff ? moment.duration(timeDiff) : null;
+      const days = timeDuration 
+        ? timeDuration.get("hours") !== 0 || timeDuration.get("minutes") !== 0
+          ? timeDuration.get("days") + 1 
+          : timeDuration.get("days")
+        : null;      
+      const quantity = numberPerson && days ? numberPerson*days : null;
+      const values ={ ...e, quantity };      
       this.props.onSubmit(values);
     }
   }
@@ -276,36 +261,32 @@ export class BookingDatesFormComponent extends Component {
             }
           }
 
-          //quantity        
-          //set time of day => 0
-          if( startDate && endDate && 
-            moment(values.startDate.date,"MM DD YYYY h:mm:ss", true).isValid() &&
-            moment(values.endDate.date,"MM DD YYYY h:mm:ss", true).isValid())
-          {          
-            startDate.date.setHours(0,0);
-            endDate.date.setHours(0,0);
-          }
-          //get timeDate
-          const timeDiff = startDate && endDate &&
+          //move time to date
+          if( startDate && endDate && hourStart && hourEnd &&
             moment(values.startDate.date,"MM DD YYYY h:mm:ss", true).isValid() && 
-            moment(values.endDate.date,"MM DD YYYY h:mm:ss", true).isValid() 
-            ? moment(endDate.date).diff(moment(startDate.date)) : null;
-
-          const timeDuration = timeDiff || timeDiff === 0 ? moment.duration(timeDiff) : null;          
-          //get time          
-          const timeEnd = hourEnd ? hourEnd.split(":") : null;
-          const timeAddDay = timeEnd && (timeEnd[0] > 0 || timeEnd[1] > 0) ? true : false;        
-          //get day:
-          const days = timeDuration ? timeAddDay ? timeDuration.get("days") + 1 : timeDuration.get("days")  : null;           
-          //daysBetween(startDate.date, endDate.date) : null;
-          const quantity = numberPerson && days ? numberPerson*days : null;          
-          //move time too date          
-          if( quantity ){
+            moment(values.endDate.date,"MM DD YYYY h:mm:ss", true).isValid()
+          ) {
             const timeStart = hourStart.split(":");
             const timeEnd = hourEnd.split(":");
             startDate.date.setHours(Number(timeStart[0]),Number(timeStart[1]));
             endDate.date.setHours(Number(timeEnd[0]),Number(timeEnd[1]));
           }
+
+          const timeDiff = startDate && endDate && hourStart && hourEnd &&
+            moment(values.startDate.date,"MM DD YYYY h:mm:ss", true).isValid() && 
+            moment(values.endDate.date,"MM DD YYYY h:mm:ss", true).isValid() 
+            ? moment(endDate.date).diff(moment(startDate.date)) : null;
+        
+          
+          const timeDuration = timeDiff ? moment.duration(timeDiff) : null;
+
+          const days = timeDuration 
+            ? timeDuration.get("hours") !== 0 || timeDuration.get("minutes") !== 0
+              ? timeDuration.get("days") + 1 
+              : timeDuration.get("days")
+            : null;
+          
+          const quantity = numberPerson && days ? numberPerson*days : null;                    
 
           const bookingData =
             quantity && numberPerson > 0
@@ -314,7 +295,7 @@ export class BookingDatesFormComponent extends Component {
                 unitPrice,
                 startDate, 
                 endDate,
-
+                numberPerson,
                 // NOTE: If unitType is `line-item/units`, a new picker
                 // for the quantity should be added to the form.
                 quantity,

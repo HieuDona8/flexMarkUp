@@ -278,7 +278,7 @@ export const sendMessage = params => (dispatch, getState, sdk) => {
  * the price with the chosen information.
  */
 export const speculateTransaction = params => (dispatch, getState, sdk) => {  
-  const { curentFirstBooking } = params;
+  const { curentFirstBooking, numberPerson } = params;
   const bookingStyle = curentFirstBooking ? TRANSITION_REQUEST_FIRST_TIME : TRANSITION_REQUEST;
   
   dispatch(speculateTransactionRequest());
@@ -306,6 +306,7 @@ export const speculateTransaction = params => (dispatch, getState, sdk) => {
         throw new Error('Expected a resource in the sdk.transactions.initiateSpeculative response');
       }
       const tx = entities[0];
+      console.log("transaction!!: ",tx);
       dispatch(speculateTransactionSuccess(tx));
     })
     .catch(e => {

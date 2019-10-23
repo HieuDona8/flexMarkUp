@@ -146,7 +146,7 @@ export class CheckoutPageComponent extends Component {
       history,      
       isFirstBooking,
     } = this.props;
-        
+            
     // Fetch currentUser with stripeCustomer entity
     // Note: since there's need for data loading in "componentWillMount" function,
     //       this is added here instead of loadData static function.
@@ -199,14 +199,16 @@ export class CheckoutPageComponent extends Component {
       // The way to pass it to checkout page is through pageData.bookingData
       
       //quantity
-      const { quantity }= pageData.bookingData || {};
+      const { quantity, numberPerson  }= pageData.bookingData || {};
+
       const curentFirstBooking = pageData.isFirstBooking;
       fetchSpeculatedTransaction({
         curentFirstBooking,
         listingId,
         bookingStart,
         bookingEnd,
-        quantity
+        quantity,
+        numberPerson,
       });
     }
 
@@ -534,6 +536,7 @@ export class CheckoutPageComponent extends Component {
     const { listing, bookingDates, transaction } = this.state.pageData;
     const existingTransaction = ensureTransaction(transaction);
     const speculatedTransaction = ensureTransaction(speculatedTransactionMaybe, {}, null);
+
     const currentListing = ensureListing(listing);
     const currentAuthor = ensureUser(currentListing.author);
 
@@ -595,6 +598,7 @@ export class CheckoutPageComponent extends Component {
     // (i.e. have an id)
     const tx = existingTransaction.booking ? existingTransaction : speculatedTransaction;
     const txBooking = ensureBooking(tx.booking);    
+    console.log("my breakdown: ", tx);
     const breakdown =
       tx.id && txBooking.id ? (
         <BookingBreakdown

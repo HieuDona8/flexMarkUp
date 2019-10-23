@@ -44,6 +44,7 @@ export const BookingBreakdownComponent = props => {
       <LineItemUnitPriceMaybe transaction={transaction} unitType={unitType} intl={intl} />
       <LineItemBookingPeriod transaction={transaction} booking={booking} unitType={unitType} />
       <LineItemUnitsMaybe transaction={transaction} unitType={unitType} />
+      <LineItemUnitsMaybe transaction={transaction} unitType={unitType} isDate={true}/>
 
       <LineItemUnknownItemsMaybe transaction={transaction} intl={intl} />
 
@@ -76,8 +77,7 @@ export const BookingBreakdownComponent = props => {
         isProvider={isProvider}
         intl={intl}
       />
-
-      <hr className={css.totalDivider} />
+            
       <LineItemTotalPrice transaction={transaction} isProvider={isProvider} intl={intl} />
       {hasCommissionLineItem ? (
         <span className={css.feeInfo}>
