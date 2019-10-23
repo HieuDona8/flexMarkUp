@@ -239,7 +239,7 @@ export const transitionsToRequested = getTransitionsToState(STATE_PREAUTHORIZED)
  * State is based on lastTransition given by transaction object and state description.
  */
 
-const txLastTransition = tx => ensureTransaction(tx).attributes.lastTransition;
+export const txLastTransition = tx => ensureTransaction(tx).attributes.lastTransition;
 
 export const txIsEnquired = tx =>
   getTransitionsToState(STATE_ENQUIRY).includes(txLastTransition(tx));

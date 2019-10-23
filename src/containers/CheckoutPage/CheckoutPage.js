@@ -109,10 +109,12 @@ export class CheckoutPageComponent extends Component {
     this.loadInitialData = this.loadInitialData.bind(this);
     this.handlePaymentIntent = this.handlePaymentIntent.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+
+   
   }
 
   componentDidMount() {
-    if (window) {
+    if (window) {      
       this.loadInitialData();
     }
   }
@@ -142,8 +144,9 @@ export class CheckoutPageComponent extends Component {
       fetchSpeculatedTransaction,
       fetchStripeCustomer,
       history,      
+      isFirstBooking,
     } = this.props;
-    
+        
     // Fetch currentUser with stripeCustomer entity
     // Note: since there's need for data loading in "componentWillMount" function,
     //       this is added here instead of loadData static function.
@@ -159,16 +162,16 @@ export class CheckoutPageComponent extends Component {
 
     if (hasDataInProps) {
       // Store data only if data is passed through props and user has navigated through a link.
-      storeData(bookingData, bookingDates, listing, transaction, STORAGE_KEY);
+      storeData(isFirstBooking, bookingData, bookingDates, listing, transaction, STORAGE_KEY);
     }
 
     // NOTE: stored data can be empty if user has already successfully completed transaction.
     const pageData = hasDataInProps
-      ? { bookingData, bookingDates, listing, transaction}
+      ? { isFirstBooking, bookingData, bookingDates, listing, transaction }
       : storedData(STORAGE_KEY);
-
+      
     // Check if a booking is already created according to stored data.
-    const tx = pageData ? pageData.transaction : null;
+    const tx = pageData ? pageData.transaction : null;    
     const isBookingCreated = tx && tx.booking && tx.booking.id;
 
     const shouldFetchSpeculatedTransaction =
@@ -197,8 +200,9 @@ export class CheckoutPageComponent extends Component {
       
       //quantity
       const { quantity }= pageData.bookingData || {};
-            
+      const curentFirstBooking = pageData.isFirstBooking;
       fetchSpeculatedTransaction({
+        curentFirstBooking,
         listingId,
         bookingStart,
         bookingEnd,
@@ -252,8 +256,7 @@ export class CheckoutPageComponent extends Component {
     const fnRequestPayment = fnParams => {
       // fnParams should be { listingId, bookingStart, bookingEnd }
       const hasPaymentIntents =
-        storedTx.attributes.protectedData && storedTx.attributes.protectedData.stripePaymentIntents;
-
+        storedTx.attributes.protectedData && storedTx.attributes.protectedData.stripePaymentIntents;      
       // If paymentIntent exists, order has been initiated previously.
       return hasPaymentIntents ? Promise.resolve(storedTx) : onInitiateOrder(fnParams, storedTx.id);
     };
@@ -377,8 +380,7 @@ export class CheckoutPageComponent extends Component {
         : selectedPaymentFlow === PAY_AND_SAVE_FOR_LATER_USE
           ? { setupPaymentMethodForSaving: true }
           : {};
-
-    console.log("my Optionnalpyament: ", optionalPaymentParams);
+    
     const { quantity } = handlePaymentParams.pageData.bookingData || null;
     const orderParams = {
       listingId: pageData.listing.id,
@@ -387,8 +389,7 @@ export class CheckoutPageComponent extends Component {
       quantity,
       ...optionalPaymentParams,
     };
-
-    console.log("my Param: ", orderParams);
+    
     return handlePaymentIntentCreation(orderParams);
   }
 
@@ -515,7 +516,7 @@ export class CheckoutPageComponent extends Component {
       retrievePaymentIntentError,
       stripeCustomerFetched,
     } = this.props;
-
+    
     // Since the listing data is already given from the ListingPage
     // and stored to handle refreshes, it might not have the possible
     // deleted or closed information in it. If the transaction
@@ -602,7 +603,7 @@ export class CheckoutPageComponent extends Component {
           booking={txBooking}
         />
       ) : null;
-
+    
     const isPaymentExpired = checkIsPaymentExpired(existingTransaction);
     const hasDefaultPaymentMethod = !!(
       stripeCustomerFetched &&
@@ -932,7 +933,9 @@ const mapStateToProps = state => {
     transaction,
     initiateOrderError,
     confirmPaymentError,
+    isFirstBooking,
   } = state.CheckoutPage;
+  
   const { currentUser } = state.user;
   const { handleCardPaymentError, paymentIntent, retrievePaymentIntentError } = state.stripe;
   return {
@@ -951,6 +954,7 @@ const mapStateToProps = state => {
     confirmPaymentError,
     paymentIntent,
     retrievePaymentIntentError,
+    isFirstBooking,
   };
 };
 
@@ -977,7 +981,6 @@ const CheckoutPage = compose(
 )(CheckoutPageComponent);
 
 CheckoutPage.setInitialValues = initialValues => setInitialValues(initialValues);
-
 CheckoutPage.displayName = 'CheckoutPage';
 
 export default CheckoutPage;

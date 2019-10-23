@@ -87,8 +87,7 @@ export class ListingPageComponent extends Component {
     super(props);
     const { enquiryModalOpenForListingId, params } = props;
     
-    this.state = {
-      isFirstBooking: false,
+    this.state = {      
       pageClassNames: [],
       imageCarouselOpen: false,
       enquiryModalOpen: enquiryModalOpenForListingId === params.id,
@@ -99,17 +98,6 @@ export class ListingPageComponent extends Component {
     this.onSubmitEnquiry = this.onSubmitEnquiry.bind(this);
   }
 
-  componentDidMount(){
-    const { checkFirstBooking } = this.props;
-    checkFirstBooking().then(res => {
-      if(res){
-        this.setState({
-          isFirstBooking: true
-        });
-      }
-    });
-  }
-
   handleSubmit(values) {
     const {
       history,
@@ -117,13 +105,16 @@ export class ListingPageComponent extends Component {
       params,
       callSetInitialValues,
       onInitializeCardPaymentData,
+      isFirstBooking,
     } = this.props;
+    
     const listingId = new UUID(params.id);
     const listing = getListing(listingId);
     
     //add time to Date
     const { startDate, endDate ,...bookingData } = values;
     const initialValues = {
+      isFirstBooking,
       listing,
       bookingData,
       bookingDates: {
@@ -137,7 +128,6 @@ export class ListingPageComponent extends Component {
     // Customize checkout page state with current listing and selected bookingDates
     const { setInitialValues } = findRouteByRouteName('CheckoutPage', routes);
     callSetInitialValues(setInitialValues, initialValues);
-    
     // Clear previous Stripe errors from store if there is any
     onInitializeCardPaymentData();
     
@@ -212,8 +202,9 @@ export class ListingPageComponent extends Component {
       categoriesConfig,
       amenitiesConfig,
       capacityConfig,
+      isFirstBooking,
     } = this.props;
-    
+        
     const listingId = new UUID(rawParams.id);
     const isPendingApprovalVariant = rawParams.variant === LISTING_PAGE_PENDING_APPROVAL_VARIANT;
     const isDraftVariant = rawParams.variant === LISTING_PAGE_DRAFT_VARIANT;
@@ -350,7 +341,7 @@ export class ListingPageComponent extends Component {
 
     const { formattedPrice, priceTitle } = priceData(price, intl);
 
-    const handleBookingSubmit = values => {      
+    const handleBookingSubmit = values => {
       //modifine booking submit
       const isCurrentlyClosed = currentListing.attributes.state === LISTING_STATE_CLOSED;
       if (isOwnListing || isCurrentlyClosed) {
@@ -491,7 +482,7 @@ export class ListingPageComponent extends Component {
                   onManageDisableScrolling={onManageDisableScrolling}
                   timeSlots={timeSlots}
                   fetchTimeSlotsError={fetchTimeSlotsError}
-                  isFirstBooking = {this.state.isFirstBooking}
+                  isFirstBooking = {isFirstBooking}
                 />
               </div>
             </div>
@@ -554,8 +545,7 @@ ListingPageComponent.propTypes = {
   sendEnquiryInProgress: bool.isRequired,
   sendEnquiryError: propTypes.error,
   onSendEnquiry: func.isRequired,
-  onInitializeCardPaymentData: func.isRequired,
-  checkFirstBooking: func.isRequired,
+  onInitializeCardPaymentData: func.isRequired,  
 
   categoriesConfig: array,
   amenitiesConfig: array,
@@ -573,6 +563,7 @@ const mapStateToProps = state => {
     sendEnquiryInProgress,
     sendEnquiryError,
     enquiryModalOpenForListingId,
+    fetchFirstBookingSuccess,
   } = state.ListingPage;
   const { currentUser } = state.user;
 
@@ -603,6 +594,7 @@ const mapStateToProps = state => {
     fetchTimeSlotsError,
     sendEnquiryInProgress,
     sendEnquiryError,
+    isFirstBooking: fetchFirstBookingSuccess,
   };
 };
 
@@ -610,8 +602,7 @@ const mapDispatchToProps = dispatch => ({
   onManageDisableScrolling: (componentId, disableScrolling) => dispatch(manageDisableScrolling(componentId, disableScrolling)),
   callSetInitialValues: (setInitialValues, values) => dispatch(setInitialValues(values)),
   onSendEnquiry: (listingId, message) => dispatch(sendEnquiry(listingId, message)),
-  onInitializeCardPaymentData: () => dispatch(initializeCardPaymentData()),
-  checkFirstBooking: () => dispatch(isFirstBooking()),  
+  onInitializeCardPaymentData: () => dispatch(initializeCardPaymentData()),  
 });
 
 // Note: it is important that the withRouter HOC is **outside** the

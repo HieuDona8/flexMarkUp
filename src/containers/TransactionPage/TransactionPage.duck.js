@@ -719,7 +719,7 @@ export const fetchFirstBooking =() => (dispatch, getState, sdk) =>{
 
   }).catch(e =>{
     dispatch(fetchFirstBooingError(e));
-  })
+  });
 };
 
 // loadData is a collection of async calls that need to be made

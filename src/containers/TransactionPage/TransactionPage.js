@@ -92,7 +92,7 @@ export const TransactionPageComponent = props => {
   const isCustomerRole = transactionRole === CUSTOMER;
 
   const redirectToCheckoutPageWithInitialValues = (initialValues, listing) => {
-
+    console.log("Data transactinPage: ", initialValues)
     const routes = routeConfiguration();
     // Customize checkout page state with current listing and selected bookingDates
     const { setInitialValues } = findRouteByRouteName('CheckoutPage', routes);
@@ -121,6 +121,7 @@ export const TransactionPageComponent = props => {
     const currentBooking = ensureListing(currentTransaction.booking);
 
     const initialValues = {
+      isFirstBooking,
       listing: currentListing,
       // Transaction with payment pending should be passed to CheckoutPage
       transaction: currentTransaction,
@@ -141,6 +142,7 @@ export const TransactionPageComponent = props => {
   const handleSubmitBookingRequest = values => {
     const { startDate, endDate, bookingDates, ...bookingData } = values;    
     const initialValues = {
+      isFirstBooking,
       listing: currentListing,
       // enquired transaction should be passed to CheckoutPage
       transaction: currentTransaction,

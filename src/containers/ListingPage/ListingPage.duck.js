@@ -61,6 +61,7 @@ const initialState = {
   sendEnquiryInProgress: false,
   sendEnquiryError: null,
   enquiryModalOpenForListingId: null,
+  fetchFirstBookingSuccess: false,
 };
 
 const listingPageReducer = (state = initialState, action = {}) => {
@@ -69,6 +70,13 @@ const listingPageReducer = (state = initialState, action = {}) => {
     case SET_INITAL_VALUES:
       return { ...initialState, ...payload };
 
+    case FETCH_FIRST_BOOKING_SUCCESS:
+      return { ...state, fetchFirstBookingSuccess: payload, fetchFirstBookingRequest: null, fetchFirstBooingError: null };
+    case FETCH_FIRST_BOOKING_REQUEST:
+      return { ...state, fetchFirstBookingSuccess: null, fetchFirstBookingRequest: true, fetchFirstBooingError: null };
+    case FETCH_FIRST_BOOKING_ERROR:
+      return { ...state, fetchFirstBookingSuccess: null, fetchFirstBookingRequest: null, fetchFirstBooingError: payload };
+    
     case SHOW_LISTING_REQUEST:
       return { ...state, id: payload.id, showListingError: null };
     case SHOW_LISTING_ERROR:
@@ -353,12 +361,54 @@ export const loadData = (params, search) => dispatch => {
       dispatch(showListing(listingId)),
       dispatch(fetchTimeSlots(listingId)),
       dispatch(fetchReviews(listingId)),
+      dispatch(fetchFirstBooking()),
       dispatch(myRequestFetchBookings(listingId))
     ]);
   } else {
     return Promise.all([dispatch(showListing(listingId)), dispatch(fetchReviews(listingId))]);
   }
 };
+
+//my check first booking
+export const FETCH_FIRST_BOOKING_REQUEST = 'app/ListingPage/FETCH_FIRST_BOOKING_REQUEST';
+export const FETCH_FIRST_BOOKING_SUCCESS = 'app/ListingPage/FETCH_FIRST_BOOKING_SUCCESS';
+export const FETCH_FIRST_BOOKING_ERROR = 'app/ListingPage/FETCH_FIRST_BOOKING_ERROR';
+
+export const fetchFirstBookingRequest = () => ({ type: FETCH_FIRST_BOOKING_REQUEST });
+export const fetchFirstBookingSuccess = result => ({ type: FETCH_FIRST_BOOKING_SUCCESS, payload: result });
+export const fetchFirstBooingError = error =>  ({ type: FETCH_FIRST_BOOKING_ERROR, error: true, payload: error });
+
+
+export const fetchFirstBooking =() => (dispatch, getState, sdk) =>{  
+  dispatch(fetchFirstBookingRequest());
+  sdk.transactions.query({
+    only: "order",
+    lastTransitions: [
+      TRANSITION_REQUEST_FIRST_TIME, 
+      TRANSITION_REQUEST, 
+      TRANSITION_CONFIRM_PAYMENT,
+      TRANSITION_ACCEPT,
+      TRANSITION_COMPLETE,
+      TRANSITION_REVIEW_1_BY_CUSTOMER,
+      TRANSITION_REVIEW_1_BY_PROVIDER,
+      TRANSITION_REVIEW_2_BY_CUSTOMER,
+      TRANSITION_REVIEW_2_BY_PROVIDER,
+      TRANSITION_EXPIRE_CUSTOMER_REVIEW_PERIOD,
+      TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD,
+      TRANSITION_EXPIRE_REVIEW_PERIOD,
+    ]
+  }).then(res => {
+    if(res.data.data.length === 0){      
+      dispatch(fetchFirstBookingSuccess(true));
+    }else{
+      dispatch(fetchFirstBookingSuccess(false));
+    }
+
+  }).catch(e =>{
+    dispatch(fetchFirstBooingError(e));
+  });
+};
+
 
 export const isFirstBooking =() => async(dispatch, getState, sdk) =>{
   let isFirst = false;
@@ -385,4 +435,4 @@ export const isFirstBooking =() => async(dispatch, getState, sdk) =>{
   });
   
   return isFirst;
-}
+};
