@@ -13,43 +13,35 @@ import { ensureTransaction } from './data';
 // created with the initial request-payment transition.
 // At this transition a PaymentIntent is created by Marketplace API.
 // After this transition, the actual payment must be made on client-side directly to Stripe.
+export const TRANSITION_REQUEST_PAYMENT = 'transition/request-payment';
 
 // A customer can also initiate a transaction with an enquiry, and
 // then transition that with a request.
 export const TRANSITION_ENQUIRE = 'transition/enquire';
-export const TRANSITION_ENQUIRY_FIRST_TIME = 'transition/request-after-enquiry-first-time';
-export const TRANSITION_ENQUIRY = 'transition/request-after-enquiry';
-
-export const TRANSITION_REQUEST = 'transition/request';
-export const TRANSITION_REQUEST_FIRST_TIME = 'transition/request-first-time';
-
+export const TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY = 'transition/request-payment-after-enquiry';
 
 // Stripe SDK might need to ask 3D security from customer, in a separate front-end step.
 // Therefore we need to make another transition to Marketplace API,
 // to tell that the payment is confirmed.
 export const TRANSITION_CONFIRM_PAYMENT = 'transition/confirm-payment';
 
-export const TRANSITION_CUSTOMER_DECLINE = 'transition/customer-decline';
-export const TRANSITION_DECLINE = 'transition/provider-decline';
-export const TRANSITION_ACCEPTED_DECLINE = 'transition/accepted-expire';
+// If the payment is not confirmed in the time limit set in transaction process (by default 15min)
+// the transaction will expire automatically.
+export const TRANSITION_EXPIRE_PAYMENT = 'transition/expire-payment';
 
 // When the provider accepts or declines a transaction from the
 // SalePage, it is transitioned with the accept or decline transition.
 export const TRANSITION_ACCEPT = 'transition/accept';
+export const TRANSITION_DECLINE = 'transition/decline';
+
+// The backend automatically expire the transaction.
+export const TRANSITION_EXPIRE = 'transition/expire';
 
 // Admin can also cancel the transition.
-export const TRANSITION_PROVIDER_CANCEL_REFUND = 'transition/provider-cancel-refund';
-export const TRANSITION_CUSTOMER_CANCEL_REFUND = 'transition/customer-cancel-refund';
-
-export const TRANSITION_MARK_TRANSACTION_IS_AFTER_48_HOURS = 'transition/mark-transaction-is-after-48-hours';
-export const TRANSITION_PROVIDER_CANCEL_REFUND_48_HOUR="transition/provider-cancel-refund-48-hour";
-
-export const TRANSITION_CUSTOMER_CANCEL_NON_REFUND = 'transition/customer-cancel-non-refund';
+export const TRANSITION_CANCEL = 'transition/cancel';
 
 // The backend will mark the transaction completed.
 export const TRANSITION_COMPLETE = 'transition/complete';
-
-
 
 // Reviews are given through transaction transitions. Review 1 can be
 // by provider or customer, and review 2 will be the other party of
@@ -61,14 +53,6 @@ export const TRANSITION_REVIEW_2_BY_CUSTOMER = 'transition/review-2-by-customer'
 export const TRANSITION_EXPIRE_CUSTOMER_REVIEW_PERIOD = 'transition/expire-customer-review-period';
 export const TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD = 'transition/expire-provider-review-period';
 export const TRANSITION_EXPIRE_REVIEW_PERIOD = 'transition/expire-review-period';
-
-/////////////////transaction old
-export const TRANSITION_REQUEST_PAYMENT = 'transition/request-payment';
-export const TRANSITION_CANCEL = 'transition/cancel';
-export const TRANSITION_EXPIRE = 'transition/expire';
-export const TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY = 'transition/request-payment-after-enquiry';
-// old state STATE_PAYMENT_EXPIRED
-const STATE_PAYMENT_EXPIRED = 'payment-expired';
 
 /**
  * Actors
@@ -101,12 +85,11 @@ export const TX_TRANSITION_ACTORS = [
 const STATE_INITIAL = 'initial';
 const STATE_ENQUIRY = 'enquiry';
 const STATE_PENDING_PAYMENT = 'pending-payment';
-//const STATE_PAYMENT_EXPIRED = 'payment-expired';
+const STATE_PAYMENT_EXPIRED = 'payment-expired';
 const STATE_PREAUTHORIZED = 'preauthorized';
 const STATE_DECLINED = 'declined';
 const STATE_ACCEPTED = 'accepted';
 const STATE_CANCELED = 'canceled';
-const STATE_AFTER_48_HOURS = 'after-48-hours';
 const STATE_DELIVERED = 'delivered';
 const STATE_REVIEWED = 'reviewed';
 const STATE_REVIEWED_BY_CUSTOMER = 'reviewed-by-customer';
@@ -125,8 +108,7 @@ const stateDescription = {
   // id is defined only to support Xstate format.
   // However if you have multiple transaction processes defined,
   // it is best to keep them in sync with transaction process aliases.
-  //id: 'preauth-with-nightly-booking/release-1',
-  id: 'journeyhorizondemo-1/release-1',
+  id: 'preauth-with-nightly-booking/release-1',
 
   // This 'initial' state is a starting point for new transaction
   initial: STATE_INITIAL,
@@ -136,61 +118,58 @@ const stateDescription = {
     [STATE_INITIAL]: {
       on: {
         [TRANSITION_ENQUIRE]: STATE_ENQUIRY,
-        [TRANSITION_REQUEST]: STATE_PENDING_PAYMENT,
-        [TRANSITION_REQUEST_FIRST_TIME]: STATE_PENDING_PAYMENT,
+        [TRANSITION_REQUEST_PAYMENT]: STATE_PENDING_PAYMENT,
       },
     },
     [STATE_ENQUIRY]: {
       on: {
-        [TRANSITION_ENQUIRY_FIRST_TIME]: STATE_PENDING_PAYMENT,
-        [TRANSITION_ENQUIRY]: STATE_PENDING_PAYMENT,
+        [TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY]: STATE_PENDING_PAYMENT,
       },
     },
+
     [STATE_PENDING_PAYMENT]: {
       on: {
+        [TRANSITION_EXPIRE_PAYMENT]: STATE_PAYMENT_EXPIRED,
         [TRANSITION_CONFIRM_PAYMENT]: STATE_PREAUTHORIZED,
       },
     },
+
+    [STATE_PAYMENT_EXPIRED]: {},
     [STATE_PREAUTHORIZED]: {
       on: {
-        [TRANSITION_CUSTOMER_DECLINE]: STATE_DECLINED,
         [TRANSITION_DECLINE]: STATE_DECLINED,
-        [TRANSITION_ACCEPTED_DECLINE]: STATE_DECLINED,
+        [TRANSITION_EXPIRE]: STATE_DECLINED,
         [TRANSITION_ACCEPT]: STATE_ACCEPTED,
       },
     },
+
+    [STATE_DECLINED]: {},
     [STATE_ACCEPTED]: {
       on: {
-        [TRANSITION_PROVIDER_CANCEL_REFUND]: STATE_CANCELED,
-        [TRANSITION_CUSTOMER_CANCEL_REFUND]: STATE_CANCELED,
-        [TRANSITION_MARK_TRANSACTION_IS_AFTER_48_HOURS]: STATE_AFTER_48_HOURS,
+        [TRANSITION_CANCEL]: STATE_CANCELED,
         [TRANSITION_COMPLETE]: STATE_DELIVERED,
       },
     },
-    [STATE_AFTER_48_HOURS]:{
-      on: {
-        [TRANSITION_CUSTOMER_CANCEL_NON_REFUND]: STATE_CANCELED,
-        [TRANSITION_PROVIDER_CANCEL_REFUND_48_HOUR]: STATE_CANCELED,
-      }
-    },
+
     [STATE_CANCELED]: {},
     [STATE_DELIVERED]: {
       on: {
-        [TRANSITION_REVIEW_1_BY_PROVIDER]: STATE_REVIEWED_BY_PROVIDER,
-        [TRANSITION_REVIEW_1_BY_CUSTOMER]: STATE_REVIEWED_BY_CUSTOMER,
         [TRANSITION_EXPIRE_REVIEW_PERIOD]: STATE_REVIEWED,
+        [TRANSITION_REVIEW_1_BY_CUSTOMER]: STATE_REVIEWED_BY_CUSTOMER,
+        [TRANSITION_REVIEW_1_BY_PROVIDER]: STATE_REVIEWED_BY_PROVIDER,
+      },
+    },
+
+    [STATE_REVIEWED_BY_CUSTOMER]: {
+      on: {
+        [TRANSITION_REVIEW_2_BY_PROVIDER]: STATE_REVIEWED,
+        [TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD]: STATE_REVIEWED,
       },
     },
     [STATE_REVIEWED_BY_PROVIDER]: {
       on: {
         [TRANSITION_REVIEW_2_BY_CUSTOMER]: STATE_REVIEWED,
         [TRANSITION_EXPIRE_CUSTOMER_REVIEW_PERIOD]: STATE_REVIEWED,
-      },
-    },
-    [STATE_REVIEWED_BY_CUSTOMER]: {
-      on: {
-        [TRANSITION_REVIEW_2_BY_PROVIDER]: STATE_REVIEWED,
-        [TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD]: STATE_REVIEWED,
       },
     },
     [STATE_REVIEWED]: { type: 'final' },
@@ -239,7 +218,7 @@ export const transitionsToRequested = getTransitionsToState(STATE_PREAUTHORIZED)
  * State is based on lastTransition given by transaction object and state description.
  */
 
-export const txLastTransition = tx => ensureTransaction(tx).attributes.lastTransition;
+const txLastTransition = tx => ensureTransaction(tx).attributes.lastTransition;
 
 export const txIsEnquired = tx =>
   getTransitionsToState(STATE_ENQUIRY).includes(txLastTransition(tx));
@@ -267,9 +246,6 @@ export const txIsCanceled = tx =>
 export const txIsDelivered = tx =>
   getTransitionsToState(STATE_DELIVERED).includes(txLastTransition(tx));
 
-export const txIsAfter48hour = tx =>
-  getTransitionsToState(STATE_AFTER_48_HOURS).includes(txLastTransition(tx));
-  
 const firstReviewTransitions = [
   ...getTransitionsToState(STATE_REVIEWED_BY_CUSTOMER),
   ...getTransitionsToState(STATE_REVIEWED_BY_PROVIDER),
@@ -322,28 +298,16 @@ export const getReview2Transition = isCustomer =>
 // The first transition and most of the expiration transitions made by system are not relevant
 export const isRelevantPastTransition = transition => {
   return [
-    TRANSITION_ENQUIRE,
-    TRANSITION_ENQUIRY_FIRST_TIME,
-    TRANSITION_ENQUIRY,
-    TRANSITION_REQUEST,
-    TRANSITION_REQUEST_FIRST_TIME,
-    TRANSITION_CONFIRM_PAYMENT,
-    TRANSITION_CUSTOMER_DECLINE,
-    TRANSITION_DECLINE,
-    TRANSITION_ACCEPTED_DECLINE,
     TRANSITION_ACCEPT,
-    TRANSITION_PROVIDER_CANCEL_REFUND,
-    TRANSITION_CUSTOMER_CANCEL_REFUND,
-    TRANSITION_MARK_TRANSACTION_IS_AFTER_48_HOURS,
-    TRANSITION_CUSTOMER_CANCEL_NON_REFUND,
+    TRANSITION_CANCEL,
     TRANSITION_COMPLETE,
+    TRANSITION_CONFIRM_PAYMENT,
+    TRANSITION_DECLINE,
+    TRANSITION_EXPIRE,
     TRANSITION_REVIEW_1_BY_CUSTOMER,
     TRANSITION_REVIEW_1_BY_PROVIDER,
     TRANSITION_REVIEW_2_BY_CUSTOMER,
     TRANSITION_REVIEW_2_BY_PROVIDER,
-    TRANSITION_EXPIRE_CUSTOMER_REVIEW_PERIOD,
-    TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD,
-    TRANSITION_EXPIRE_REVIEW_PERIOD,
   ].includes(transition);
 };
 

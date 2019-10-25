@@ -7,21 +7,12 @@ import { Avatar, InlineTextButton, ReviewRating, UserDisplayName } from '../../c
 import { formatDate } from '../../util/dates';
 import { ensureTransaction, ensureUser, ensureListing } from '../../util/data';
 import {
-  TRANSITION_ENQUIRE,
-  TRANSITION_ENQUIRY_FIRST_TIME,
-  TRANSITION_ENQUIRY,
   TRANSITION_ACCEPT,
+  TRANSITION_CANCEL,
   TRANSITION_COMPLETE,
   TRANSITION_DECLINE,
-  TRANSITION_CUSTOMER_DECLINE,
   TRANSITION_EXPIRE,
-  TRANSITION_REQUEST,
-  TRANSITION_REQUEST_FIRST_TIME,
-  TRANSITION_MARK_TRANSACTION_IS_AFTER_48_HOURS,
   TRANSITION_CONFIRM_PAYMENT,
-  TRANSITION_PROVIDER_CANCEL_REFUND,
-  TRANSITION_CUSTOMER_CANCEL_REFUND,
-  TRANSITION_CUSTOMER_CANCEL_NON_REFUND,
   TRANSITION_REVIEW_1_BY_CUSTOMER,
   TRANSITION_REVIEW_1_BY_PROVIDER,
   TRANSITION_REVIEW_2_BY_CUSTOMER,
@@ -35,7 +26,7 @@ import {
   txRoleIsProvider,
   txRoleIsCustomer,
   getUserTxRole,
-  isRelevantPastTransition,  
+  isRelevantPastTransition,
 } from '../../util/transaction';
 import { propTypes } from '../../util/types';
 import * as log from '../../util/log';
@@ -123,27 +114,7 @@ const resolveTransitionMessage = (
   const displayName = otherUsersName;
 
   switch (currentTransition) {
-    case TRANSITION_ENQUIRE:
-      return isOwnTransition ? (
-        <FormattedMessage id="ActivityFeed.ownTransitionEnquiry" values={{ listingTitle }} />
-      ) : (
-        <FormattedMessage
-          id="ActivityFeed.transitionEnquiry"
-          values={{ displayName, listingTitle }}
-        />
-      ); 
-    case TRANSITION_ENQUIRY_FIRST_TIME:
-    case TRANSITION_ENQUIRY:
-      return isOwnTransition ? (
-        <FormattedMessage id="ActivityFeed.ownTransitionAfterEnquiry" values={{ listingTitle }} />
-      ) : (
-        <FormattedMessage
-          id="ActivityFeed.transitionAfterEnquiry"
-          values={{ displayName, listingTitle }}
-        />
-      ); 
-    case TRANSITION_REQUEST_FIRST_TIME:
-    case TRANSITION_REQUEST:
+    case TRANSITION_CONFIRM_PAYMENT:
       return isOwnTransition ? (
         <FormattedMessage id="ActivityFeed.ownTransitionRequest" values={{ listingTitle }} />
       ) : (
@@ -152,28 +123,12 @@ const resolveTransitionMessage = (
           values={{ displayName, listingTitle }}
         />
       );
-    case TRANSITION_CONFIRM_PAYMENT:
-      return isOwnTransition ? (
-        <FormattedMessage id="ActivityFeed.ownTransitionComfirmPayment" values={{ listingTitle }} />
-      ) : (
-        <FormattedMessage
-          id="ActivityFeed.transitionComfirmPayment"
-          values={{ displayName, listingTitle }}
-        />
-      );  
     case TRANSITION_ACCEPT:
       return isOwnTransition ? (
         <FormattedMessage id="ActivityFeed.ownTransitionAccept" />
       ) : (
         <FormattedMessage id="ActivityFeed.transitionAccept" values={{ displayName }} />
       );
-    case TRANSITION_MARK_TRANSACTION_IS_AFTER_48_HOURS:
-      return !txRoleIsProvider(ownRole) ? (
-        <FormattedMessage id="ActivityFeed.ownTransition48Hour" />
-      ) : (
-        <FormattedMessage id="ActivityFeed.transition48Hour" values={{ displayName }} />
-      );
-    case TRANSITION_CUSTOMER_DECLINE:
     case TRANSITION_DECLINE:
       return isOwnTransition ? (
         <FormattedMessage id="ActivityFeed.ownTransitionDecline" />
@@ -186,9 +141,7 @@ const resolveTransitionMessage = (
       ) : (
         <FormattedMessage id="ActivityFeed.transitionExpire" values={{ displayName }} />
       );
-    case TRANSITION_CUSTOMER_CANCEL_REFUND:
-    case TRANSITION_PROVIDER_CANCEL_REFUND:
-    case TRANSITION_CUSTOMER_CANCEL_NON_REFUND:
+    case TRANSITION_CANCEL:
       return <FormattedMessage id="ActivityFeed.transitionCancel" />;
     case TRANSITION_COMPLETE:
       // Show the leave a review link if the state is delivered and if the current user is the first to leave a review

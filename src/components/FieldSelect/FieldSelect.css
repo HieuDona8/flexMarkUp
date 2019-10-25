@@ -5,8 +5,7 @@
 
 .select {
   color: var(--matterColorAnti);
-  border-bottom-color: var(--attentionColorBottom);
-  border-bottom-width: 3px;
+  border-bottom-color: var(--attentionColor);
   padding-right: 20px;
 
   & > option {
@@ -19,7 +18,7 @@
 
 .selectSuccess {
   color: var(--matterColor);
-  border-bottom-color: var(--attentionColorSuccess);
+  border-bottom-color: var(--successColor);
 }
 
 .selectError {

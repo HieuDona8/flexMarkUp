@@ -78,7 +78,7 @@
 
 .bookingTitle {
   /* Font */
-  color: var(--marketplaceColorBlueForm);
+  color: var(--matterColor);
 
   margin-top: 0;
   margin-bottom: 9px;
@@ -89,7 +89,7 @@
   @apply --marketplaceH5FontStyles;
 
   @media (--viewportMedium) {
-    color: var(--marketplaceColorBlueSubTitle);
+    color: var(--matterColor);
     display: block;
     margin-top: 0;
   }

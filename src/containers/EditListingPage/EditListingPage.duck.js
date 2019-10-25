@@ -462,7 +462,7 @@ export function requestShowListing(actionPayload) {
         // EditListingPage fetches new listing data, which also needs to be added to global data
         dispatch(addMarketplaceEntities(response));
         // In case of success, we'll clear state.EditListingPage (user will be redirected away)
-        dispatch(showListingsSuccess(response));               
+        dispatch(showListingsSuccess(response));
         return response;
       })
       .catch(e => dispatch(showListingsError(storableError(e))));
@@ -536,7 +536,7 @@ export const requestFetchBookings = fetchParams => (dispatch, getState, sdk) => 
   return sdk.bookings
     .query({ listingId, start, end, state }, { expand: true })
     .then(response => {
-      const bookings = denormalisedResponseEntities(response);         
+      const bookings = denormalisedResponseEntities(response);
       return dispatch(fetchBookingsSuccess({ data: { monthId, bookings } }));
     })
     .catch(e => {
@@ -556,7 +556,7 @@ export const requestFetchAvailabilityExceptions = fetchParams => (dispatch, getS
     .then(response => {      
       const exceptions = denormalisedResponseEntities(response).map(availabilityException => ({
         availabilityException,
-      }));                  
+      }));      
       return dispatch(fetchAvailabilityExceptionsSuccess({ data: { monthId, exceptions } }));
     })
     .catch(e => {
@@ -571,7 +571,7 @@ export const requestCreateAvailabilityException = params => (dispatch, getState,
 
   return sdk.availabilityExceptions
     .create(createParams, { expand: true })
-    .then(response => {      
+    .then(response => {
       dispatch(
         createAvailabilityExceptionSuccess({
           data: {
@@ -667,7 +667,7 @@ export function loadData(params) {
       id: new UUID(id),
       include: ['author', 'images'],
       'fields.image': ['variants.landscape-crop', 'variants.landscape-crop2x'],
-    };    
+    };
     return dispatch(requestShowListing(payload));
   };
 }

@@ -30,7 +30,6 @@ import { TopbarContainer } from '../../containers';
 import {
   acceptSale,
   declineSale,
-  cancelSale,
   loadData,
   setInitialValues,
   sendMessage,
@@ -72,26 +71,21 @@ export const TransactionPageComponent = props => {
     acceptSaleError,
     declineInProgress,
     declineSaleError,
-    cancelInProgress,
-    cancelSaleError,
     onAcceptSale,
     onDeclineSale,
-    onCancelSale,
     timeSlots,
     fetchTimeSlotsError,
     processTransitions,
     callSetInitialValues,
     onInitializeCardPaymentData,
-    isFirstBooking,
   } = props;
 
   const currentTransaction = ensureTransaction(transaction);
-  
   const currentListing = ensureListing(currentTransaction.listing);
   const isProviderRole = transactionRole === PROVIDER;
   const isCustomerRole = transactionRole === CUSTOMER;
 
-  const redirectToCheckoutPageWithInitialValues = (initialValues, listing) => {    
+  const redirectToCheckoutPageWithInitialValues = (initialValues, listing) => {
     const routes = routeConfiguration();
     // Customize checkout page state with current listing and selected bookingDates
     const { setInitialValues } = findRouteByRouteName('CheckoutPage', routes);
@@ -99,7 +93,7 @@ export const TransactionPageComponent = props => {
 
     // Clear previous Stripe errors from store if there is any
     onInitializeCardPaymentData();
-        
+
     // Redirect to CheckoutPage
     history.push(
       createResourceLocatorString(
@@ -120,7 +114,6 @@ export const TransactionPageComponent = props => {
     const currentBooking = ensureListing(currentTransaction.booking);
 
     const initialValues = {
-      isFirstBooking,
       listing: currentListing,
       // Transaction with payment pending should be passed to CheckoutPage
       transaction: currentTransaction,
@@ -133,22 +126,22 @@ export const TransactionPageComponent = props => {
         bookingEnd: dateFromAPIToLocalNoon(currentBooking.attributes.end),
       },
     };
-    
+
     redirectToCheckoutPageWithInitialValues(initialValues, currentListing);
   }
 
   // Customer can create a booking, if the tx is in "enquiry" state.
   const handleSubmitBookingRequest = values => {
-    const { startDate, endDate, bookingDates, ...bookingData } = values;    
+    const { bookingDates, ...bookingData } = values;
+
     const initialValues = {
-      isFirstBooking,
       listing: currentListing,
       // enquired transaction should be passed to CheckoutPage
       transaction: currentTransaction,
       bookingData,
       bookingDates: {
-        bookingStart: startDate.date,
-        bookingEnd: endDate.date,
+        bookingStart: bookingDates.startDate,
+        bookingEnd: bookingDates.endDate,
       },
       confirmPaymentError: null,
     };
@@ -242,18 +235,14 @@ export const TransactionPageComponent = props => {
       transactionRole={transactionRole}
       onAcceptSale={onAcceptSale}
       onDeclineSale={onDeclineSale}
-      onCancelSale={onCancelSale}
       acceptInProgress={acceptInProgress}
       declineInProgress={declineInProgress}
-      cancelInProgress={cancelInProgress}
       acceptSaleError={acceptSaleError}
       declineSaleError={declineSaleError}
-      cancelSaleError={cancelSaleError}
       nextTransitions={processTransitions}
       onSubmitBookingRequest={handleSubmitBookingRequest}
       timeSlots={timeSlots}
       fetchTimeSlotsError={fetchTimeSlotsError}
-      isFirstBooking={isFirstBooking}
     />
   ) : (
     loadingOrFailedFetching
@@ -284,7 +273,6 @@ TransactionPageComponent.defaultProps = {
   fetchTransactionError: null,
   acceptSaleError: null,
   declineSaleError: null,
-  cancelSaleError: null,
   transaction: null,
   fetchMessagesError: null,
   initialMessageFailedToTransaction: null,
@@ -303,13 +291,10 @@ TransactionPageComponent.propTypes = {
   fetchTransactionError: propTypes.error,
   acceptSaleError: propTypes.error,
   declineSaleError: propTypes.error,
-  cancelSaleError: propTypes.error,
   acceptInProgress: bool.isRequired,
   declineInProgress: bool.isRequired,
-  cancelInProgress: bool.isRequired,
   onAcceptSale: func.isRequired,
   onDeclineSale: func.isRequired,
-  onCancelSale: func.isRequired,
   scrollingDisabled: bool.isRequired,
   transaction: propTypes.transaction,
   fetchMessagesError: propTypes.error,
@@ -339,16 +324,13 @@ TransactionPageComponent.propTypes = {
   intl: intlShape.isRequired,
 };
 
-
 const mapStateToProps = state => {
   const {
     fetchTransactionError,
     acceptSaleError,
     declineSaleError,
-    cancelSaleError,
     acceptInProgress,
     declineInProgress,
-    cancelInProgress,
     transactionRef,
     fetchMessagesInProgress,
     fetchMessagesError,
@@ -364,9 +346,7 @@ const mapStateToProps = state => {
     timeSlots,
     fetchTimeSlotsError,
     processTransitions,
-    fetchFirstBookingSuccess,
   } = state.TransactionPage;
-
   const { currentUser } = state.user;
 
   const transactions = getMarketplaceEntities(state, transactionRef ? [transactionRef] : []);
@@ -377,10 +357,8 @@ const mapStateToProps = state => {
     fetchTransactionError,
     acceptSaleError,
     declineSaleError,
-    cancelSaleError,
     acceptInProgress,
     declineInProgress,
-    cancelInProgress,
     scrollingDisabled: isScrollingDisabled(state),
     transaction,
     fetchMessagesInProgress,
@@ -397,15 +375,13 @@ const mapStateToProps = state => {
     timeSlots,
     fetchTimeSlotsError,
     processTransitions,
-    isFirstBooking: fetchFirstBookingSuccess,
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     onAcceptSale: transactionId => dispatch(acceptSale(transactionId)),
-    onDeclineSale: ( transactionId, isCustomerRole) => dispatch(declineSale(transactionId, isCustomerRole)),
-    onCancelSale: (transactionId, isCustomerRole, transaction) => dispatch(cancelSale(transactionId, isCustomerRole, transaction)),
+    onDeclineSale: transactionId => dispatch(declineSale(transactionId)),
     onShowMoreMessages: txId => dispatch(fetchMoreMessages(txId)),
     onSendMessage: (txId, message) => dispatch(sendMessage(txId, message)),
     onManageDisableScrolling: (componentId, disableScrolling) =>

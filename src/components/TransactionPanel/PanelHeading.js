@@ -14,7 +14,6 @@ export const HEADING_ACCEPTED = 'accepted';
 export const HEADING_DECLINED = 'declined';
 export const HEADING_CANCELED = 'canceled';
 export const HEADING_DELIVERED = 'deliveded';
-export const HEADING_AFTER_48_HOUR = 'after-48-hour';
 
 const createListingLink = (listingId, label, listingDeleted, searchParams = {}, className = '') => {
   if (!listingDeleted) {
@@ -212,22 +211,6 @@ const PanelHeading = props => {
         <HeadingProvider
           className={titleClasses}
           id="TransactionPanel.saleAcceptedTitle"
-          values={{ customerName, listingLink }}
-        />
-      );
-    case HEADING_AFTER_48_HOUR:
-      return isCustomer ? (
-        <HeadingCustomerWithSubtitle
-          className={titleClasses}
-          id="TransactionPanel.orderPreauthorized48HourTitle"
-          values={{ customerName }}
-          subtitleId="TransactionPanel.orderHasBeen48HourSubtitle"
-          subtitleValues={{ listingLink }}
-        />
-      ) : (
-        <HeadingProvider
-          className={titleClasses}
-          id="TransactionPanel.saleHasBeen48HourTitle"
           values={{ customerName, listingLink }}
         />
       );

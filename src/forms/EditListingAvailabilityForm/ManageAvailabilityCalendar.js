@@ -382,7 +382,7 @@ class ManageAvailabilityCalendar extends Component {
     const calendarGridWidth = daySize * TABLE_COLUMNS + TABLE_BORDER;
 
     const calendar = availability.calendar;
-    const currentMonthData = calendar[monthIdString(currentMonth)];    
+    const currentMonthData = calendar[monthIdString(currentMonth)];
     const {
       fetchExceptionsInProgress,
       fetchBookingsInProgress,

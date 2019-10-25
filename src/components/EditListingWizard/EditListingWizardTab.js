@@ -98,7 +98,7 @@ const EditListingWizardTab = props => {
     updateInProgress,
     intl,
   } = props;
-  
+
   const { type } = params;
   const isNewURI = type === LISTING_PAGE_PARAM_TYPE_NEW;
   const isDraftURI = type === LISTING_PAGE_PARAM_TYPE_DRAFT;
