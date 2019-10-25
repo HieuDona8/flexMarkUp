@@ -3,9 +3,22 @@ import config from '../../config';
 import { denormalisedResponseEntities } from '../../util/data';
 import { storableError } from '../../util/errors';
 import {
-  TRANSITION_REQUEST_PAYMENT,
-  TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY,
+  txLastTransition,
+  TRANSITION_ENQUIRE,  
+  TRANSITION_ENQUIRY_FIRST_TIME,
+  TRANSITION_ENQUIRY,
+  TRANSITION_REQUEST_FIRST_TIME,
+  TRANSITION_REQUEST,  
   TRANSITION_CONFIRM_PAYMENT,
+  TRANSITION_ACCEPT,
+  TRANSITION_COMPLETE,
+  TRANSITION_REVIEW_1_BY_CUSTOMER,
+  TRANSITION_REVIEW_1_BY_PROVIDER,
+  TRANSITION_REVIEW_2_BY_CUSTOMER,
+  TRANSITION_REVIEW_2_BY_PROVIDER,
+  TRANSITION_EXPIRE_CUSTOMER_REVIEW_PERIOD,
+  TRANSITION_EXPIRE_PROVIDER_REVIEW_PERIOD,
+  TRANSITION_EXPIRE_REVIEW_PERIOD,
 } from '../../util/transaction';
 import * as log from '../../util/log';
 import { fetchCurrentUserHasOrdersSuccess, fetchCurrentUser } from '../../ducks/user.duck';
@@ -43,6 +56,7 @@ const initialState = {
   initiateOrderError: null,
   confirmPaymentError: null,
   stripeCustomerFetched: false,
+  isFirstBooking: null,
 };
 
 export default function checkoutPageReducer(state = initialState, action = {}) {
@@ -105,7 +119,7 @@ export default function checkoutPageReducer(state = initialState, action = {}) {
 
 // ================ Action creators ================ //
 
-export const setInitialValues = initialValues => ({
+export const setInitialValues = initialValues =>({
   type: SET_INITAL_VALUES,
   payload: pick(initialValues, Object.keys(initialState)),
 });
@@ -160,18 +174,22 @@ export const stripeCustomerError = e => ({
 /* ================ Thunks ================ */
 
 export const initiateOrder = (orderParams, transactionId) => (dispatch, getState, sdk) => {
+  const { isFirstBooking } = orderParams;  
   dispatch(initiateOrderRequest());
+  const typeBookingAfterEnquiry = isFirstBooking ? TRANSITION_ENQUIRY_FIRST_TIME : TRANSITION_ENQUIRY;
+  const typeBooking = isFirstBooking ? TRANSITION_REQUEST_FIRST_TIME : TRANSITION_REQUEST;
+    
   const bodyParams = transactionId
     ? {
-        id: transactionId,
-        transition: TRANSITION_REQUEST_PAYMENT_AFTER_ENQUIRY,
-        params: orderParams,
-      }
+      id: transactionId,
+      transition: typeBookingAfterEnquiry,
+      params: orderParams,
+    }
     : {
-        processAlias: config.bookingProcessAlias,
-        transition: TRANSITION_REQUEST_PAYMENT,
-        params: orderParams,
-      };
+      processAlias: config.bookingProcessAlias,
+      transition: typeBooking,
+      params: orderParams,
+    };
   const queryParams = {
     include: ['booking', 'provider'],
     expand: true,
@@ -259,28 +277,36 @@ export const sendMessage = params => (dispatch, getState, sdk) => {
  * pricing info for the booking breakdown to get a proper estimate for
  * the price with the chosen information.
  */
-export const speculateTransaction = params => (dispatch, getState, sdk) => {
+export const speculateTransaction = params => (dispatch, getState, sdk) => {  
+  const { curentFirstBooking, numberPerson } = params;
+  const bookingStyle = curentFirstBooking ? TRANSITION_REQUEST_FIRST_TIME : TRANSITION_REQUEST;
+  
   dispatch(speculateTransactionRequest());
   const bodyParams = {
-    transition: TRANSITION_REQUEST_PAYMENT,
+    transition: bookingStyle,
     processAlias: config.bookingProcessAlias,
     params: {
       ...params,
       cardToken: 'CheckoutPage_speculative_card_token',
     },
   };
+
   const queryParams = {
     include: ['booking', 'provider'],
     expand: true,
   };
+
   return sdk.transactions
-    .initiateSpeculative(bodyParams, queryParams)
+    .initiateSpeculative(
+      bodyParams, queryParams
+    )
     .then(response => {
       const entities = denormalisedResponseEntities(response);
       if (entities.length !== 1) {
         throw new Error('Expected a resource in the sdk.transactions.initiateSpeculative response');
       }
       const tx = entities[0];
+      console.log("transaction!!: ",tx);
       dispatch(speculateTransactionSuccess(tx));
     })
     .catch(e => {

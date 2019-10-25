@@ -13,6 +13,7 @@ import {
   txHasBeenDelivered,
   txIsPaymentExpired,
   txIsPaymentPending,
+  txIsAfter48hour,
 } from '../../util/transaction';
 import { propTypes, DATE_TYPE_DATE } from '../../util/types';
 import { ensureCurrentUser } from '../../util/data';
@@ -127,7 +128,17 @@ export const txState = (intl, tx, type) => {
         id: 'InboxPage.stateAccepted',
       }),
     };
-  } else if (txIsCanceled(tx)) {
+  }  else if (txIsAfter48hour(tx)) {
+    return {
+      nameClassName: css.nameNotEmphasized,
+      bookingClassName: css.bookingNoActionNeeded,
+      lastTransitionedAtClassName: css.lastTransitionedAtNotEmphasized,
+      stateClassName: isOrder ? css.stateActionNeeded : css.stateNoActionNeeded,
+      state: intl.formatMessage({
+        id: 'InboxPage.after48hour',
+      }),
+    };
+  }else if (txIsCanceled(tx)) {
     return {
       nameClassName: css.nameNotEmphasized,
       bookingClassName: css.bookingNoActionNeeded,
@@ -283,12 +294,11 @@ export const InboxPageComponent = props => {
   const salesTitle = intl.formatMessage({ id: 'InboxPage.salesTitle' });
   const title = isOrders ? ordersTitle : salesTitle;
 
-  const toTxItem = tx => {
+  const toTxItem = tx => {    
     const type = isOrders ? 'order' : 'sale';
-    const stateData = txState(intl, tx, type);
-
+    const stateData = txState(intl, tx, type);    
     // Render InboxItem only if the latest transition of the transaction is handled in the `txState` function.
-    return stateData ? (
+    return stateData ? (      
       <li key={tx.id.uuid} className={css.listItem}>
         <InboxItem unitType={unitType} type={type} tx={tx} intl={intl} stateData={stateData} />
       </li>
@@ -378,6 +388,7 @@ export const InboxPageComponent = props => {
           <ul className={css.itemList}>
             {!fetchInProgress ? (
               transactions.map(toTxItem)
+              //console.log("transactions: ", transactions)
             ) : (
               <li className={css.listItemsLoading}>
                 <IconSpinner />
@@ -424,6 +435,7 @@ InboxPageComponent.propTypes = {
 };
 
 const mapStateToProps = state => {
+  //console.log("state.InboxPage: ", state.InboxPage)
   const { fetchInProgress, fetchOrdersOrSalesError, pagination, transactionRefs } = state.InboxPage;
   const { currentUser, currentUserNotificationCount: providerNotificationCount } = state.user;
   return {

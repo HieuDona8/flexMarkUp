@@ -16,7 +16,7 @@ import { intlShape, injectIntl } from '../../util/reactIntl';
 import classNames from 'classnames';
 import moment from 'moment';
 import config from '../../config';
-import { propTypes, TIME_SLOT_DAY } from '../../util/types';
+import { propTypes, DEFAULT_TIME_ZONE , TIME_SLOT_DAY, TIME_SLOT_TIME } from '../../util/types';
 import { dateFromAPIToLocalNoon } from '../../util/dates';
 import { ensureTimeSlot } from '../../util/data';
 
@@ -96,7 +96,8 @@ const defaultProps = {
   // Internationalization props
   // Multilocale support can be achieved with displayFormat like moment.localeData.longDateFormat('L')
   // https://momentjs.com/
-  displayFormat: 'ddd, MMM D',
+  //displayFormat: 'ddd, MMM D',
+  displayFormat: 'DD/MM/YYYY',
   monthFormat: 'MMMM YYYY',
   weekDayFormat: 'dd',
   phrases: {
@@ -106,13 +107,12 @@ const defaultProps = {
 };
 
 // Checks if time slot (propTypes.timeSlot) start time equals a day (moment)
-const timeSlotEqualsDay = (timeSlot, day) => {
+const timeSlotEqualsDay = (timeSlot, day) => {    
   // Time slots describe available dates by providing a start and
   // an end date which is the following day. In the single date picker
   // the start date is used to represent available dates.
   const localStartDate = dateFromAPIToLocalNoon(timeSlot.attributes.start);
-
-  const isDay = ensureTimeSlot(timeSlot).attributes.type === TIME_SLOT_DAY;
+  const isDay = ensureTimeSlot(timeSlot).attributes.type === TIME_SLOT_TIME;  
   return isDay && isSameDay(day, moment(localStartDate));
 };
 
@@ -166,13 +166,37 @@ class DateInputComponent extends Component {
       ...datePickerProps
     } = this.props;
     /* eslint-enable no-unused-vars */
-
+    
     const initialMoment = initialDate ? moment(initialDate) : null;
 
     const date = value && value.date instanceof Date ? moment(value.date) : initialMoment;
+    
+    //const dateFormat = value && value.date instanceof Date ? moment(value.date) : initialMoment;
 
-    const isDayBlocked = timeSlots
-      ? day => !timeSlots.find(timeSlot => timeSlotEqualsDay(timeSlot, day))
+    //const date = new Intl.DateTimeFormat('en-GB').format(dateFormat);    
+    
+    const createTimeSlots = timeSlots => { 
+      const arrTimeSlot = [];
+      timeSlots.forEach((timeSlot, index) => {        
+        const curentStartDay = timeSlot.attributes.start;
+        const curentEndDay = timeSlot.attributes.end;        
+        const timeDiff = moment(curentEndDay).diff(moment(curentStartDay),"days");
+        for(let i = 0 ;i< timeDiff; i++){
+          const start = new Date(moment(curentStartDay).add(i, "days"));
+          const end = new Date(moment(curentStartDay).add(i, "days"));
+          const attributes = { start, end, seats: 2, type: "time-slot/time" }
+          const result = { attributes, id: "myid", type: "timeSlot" }
+          arrTimeSlot.push(result);
+        }                        
+      });   
+      return arrTimeSlot;   
+    };
+
+    const newTimeSlots = timeSlots ? createTimeSlots(timeSlots) : null;
+
+    
+    const isDayBlocked = newTimeSlots
+      ? day => !newTimeSlots.find(timeSlot => timeSlotEqualsDay(timeSlot, day))
       : () => false;
 
     const placeholder = placeholderText || intl.formatMessage({ id: 'FieldDateInput.placeholder' });
@@ -192,6 +216,8 @@ class DateInputComponent extends Component {
     const classes = classNames(css.inputRoot, className, {
       [css.withMobileMargins]: useMobileMargins,
     });
+
+    
 
     return (
       <div className={classes}>

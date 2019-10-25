@@ -58,6 +58,7 @@ const txHasCommission = (transaction, userRole) => {
       item => item.code === LINE_ITEM_PROVIDER_COMMISSION
     );
   }
+
   return !!commissionLineItem;
 };
 
@@ -72,7 +73,7 @@ const LineItemSubTotalMaybe = props => {
   // PLEASE NOTE that this assumes that the transaction doesn't have other
   // line item types than the defined unit type (e.g. week, month, year).
   const showSubTotal = txHasCommission(transaction, userRole) || refund;
-
+  
   // all non-reversal, non-commission line items
   const subTotalLineItems = nonCommissionNonReversalLineItems(transaction);
   // line totals of those line items combined

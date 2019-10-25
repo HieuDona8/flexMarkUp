@@ -41,7 +41,13 @@ import {
 } from '../../components';
 import { TopbarContainer, NotFoundPage } from '../../containers';
 
-import { sendEnquiry, loadData, setInitialValues } from './ListingPage.duck';
+import { 
+  sendEnquiry, 
+  loadData, 
+  setInitialValues, 
+  isFirstBooking,
+  myRequestFetchBookings,
+} from './ListingPage.duck';
 import SectionImages from './SectionImages';
 import SectionAvatar from './SectionAvatar';
 import SectionCapacity from './SectionCapacity';
@@ -80,7 +86,8 @@ export class ListingPageComponent extends Component {
   constructor(props) {
     super(props);
     const { enquiryModalOpenForListingId, params } = props;
-    this.state = {
+    
+    this.state = {      
       pageClassNames: [],
       imageCarouselOpen: false,
       enquiryModalOpen: enquiryModalOpenForListingId === params.id,
@@ -98,27 +105,25 @@ export class ListingPageComponent extends Component {
       params,
       callSetInitialValues,
       onInitializeCardPaymentData,
+      isFirstBooking,
     } = this.props;
+    
     const listingId = new UUID(params.id);
     const listing = getListing(listingId);
-       
+  
     //add time to Date
-    const { startDate, endDate, hourStart, hourEnd , ...bookingData } = values;
-    const timeStart = hourStart.split(":");
-    const timeEnd = hourEnd.split(":");
-    startDate.date.setHours(Number(timeStart[0]),Number(timeStart[1]));
-    endDate.date.setHours(Number(timeEnd[0]),Number(timeEnd[1]));
-
+    const { startDate, endDate ,...bookingData } = values;
     const initialValues = {
+      isFirstBooking,
       listing,
       bookingData,
       bookingDates: {
         bookingStart: startDate.date,
-        bookingEnd: endDate.date,
-      },
+        bookingEnd: endDate.date,        
+      },      
       confirmPaymentError: null,
     };
-
+    
     const routes = routeConfiguration();
     // Customize checkout page state with current listing and selected bookingDates
     const { setInitialValues } = findRouteByRouteName('CheckoutPage', routes);
@@ -126,7 +131,6 @@ export class ListingPageComponent extends Component {
 
     // Clear previous Stripe errors from store if there is any
     onInitializeCardPaymentData();
-
     // Redirect to CheckoutPage
     history.push(
       createResourceLocatorString(
@@ -175,6 +179,7 @@ export class ListingPageComponent extends Component {
       });
   }
 
+
   render() {
     const {
       unitType,
@@ -197,8 +202,10 @@ export class ListingPageComponent extends Component {
       categoriesConfig,
       amenitiesConfig,
       capacityConfig,
-    } = this.props;
+      isFirstBooking,
 
+    } = this.props;
+        
     const listingId = new UUID(rawParams.id);
     const isPendingApprovalVariant = rawParams.variant === LISTING_PAGE_PENDING_APPROVAL_VARIANT;
     const isDraftVariant = rawParams.variant === LISTING_PAGE_DRAFT_VARIANT;
@@ -336,7 +343,8 @@ export class ListingPageComponent extends Component {
     const { formattedPrice, priceTitle } = priceData(price, intl);
 
     const handleBookingSubmit = values => {
-      //edit booking submit
+
+      //modifine booking submit      
       const isCurrentlyClosed = currentListing.attributes.state === LISTING_STATE_CLOSED;
       if (isOwnListing || isCurrentlyClosed) {
         window.scrollTo(0, 0);
@@ -476,6 +484,7 @@ export class ListingPageComponent extends Component {
                   onManageDisableScrolling={onManageDisableScrolling}
                   timeSlots={timeSlots}
                   fetchTimeSlotsError={fetchTimeSlotsError}
+                  isFirstBooking = {isFirstBooking}
                 />
               </div>
             </div>
@@ -538,14 +547,14 @@ ListingPageComponent.propTypes = {
   sendEnquiryInProgress: bool.isRequired,
   sendEnquiryError: propTypes.error,
   onSendEnquiry: func.isRequired,
-  onInitializeCardPaymentData: func.isRequired,
+  onInitializeCardPaymentData: func.isRequired,  
 
   categoriesConfig: array,
   amenitiesConfig: array,
   capacityConfig: array,
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = state => {  
   const { isAuthenticated } = state.Auth;
   const {
     showListingError,
@@ -556,6 +565,7 @@ const mapStateToProps = state => {
     sendEnquiryInProgress,
     sendEnquiryError,
     enquiryModalOpenForListingId,
+    fetchFirstBookingSuccess,
   } = state.ListingPage;
   const { currentUser } = state.user;
 
@@ -585,15 +595,15 @@ const mapStateToProps = state => {
     fetchTimeSlotsError,
     sendEnquiryInProgress,
     sendEnquiryError,
+    isFirstBooking: fetchFirstBookingSuccess,
   };
 };
 
 const mapDispatchToProps = dispatch => ({
-  onManageDisableScrolling: (componentId, disableScrolling) =>
-    dispatch(manageDisableScrolling(componentId, disableScrolling)),
+  onManageDisableScrolling: (componentId, disableScrolling) => dispatch(manageDisableScrolling(componentId, disableScrolling)),
   callSetInitialValues: (setInitialValues, values) => dispatch(setInitialValues(values)),
   onSendEnquiry: (listingId, message) => dispatch(sendEnquiry(listingId, message)),
-  onInitializeCardPaymentData: () => dispatch(initializeCardPaymentData()),
+  onInitializeCardPaymentData: () => dispatch(initializeCardPaymentData()),  
 });
 
 // Note: it is important that the withRouter HOC is **outside** the

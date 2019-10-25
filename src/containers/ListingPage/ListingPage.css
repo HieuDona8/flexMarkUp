@@ -240,10 +240,11 @@
     border-left-width: 1px;
     border-left-color: var(--matterColorNegative);
 
-    padding-left: 60px;
+    padding-left: 20px;
+    padding-right: 20px;
 
     /* The calendar needs 312px */
-    flex-basis: 312px;
+    flex-basis: 390px;
     flex-shrink: 0;
   }
 }
@@ -583,4 +584,9 @@
   /* use break-word if available */
   word-break: break-word;
   hyphens: auto;
+}
+
+/*capacity css*/
+.sectionCapacity{
+  color: red;
 }

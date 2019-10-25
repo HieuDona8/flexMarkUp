@@ -5,7 +5,8 @@
 
 .pickerSuccess {
   & :global(.DateInput_input) {
-    border-bottom-color: var(--successColor);
+    /*My successColor*/
+    border-bottom-color: var(--attentionColorSuccess);
   }
 }
 
@@ -28,3 +29,4 @@
     margin: 0;
   }
 }
+

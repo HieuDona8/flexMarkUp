@@ -65,7 +65,10 @@ const BookingPanel = props => {
     history,
     location,
     intl,
+    isFirstBooking,
   } = props;
+
+  
 
   const price = listing.attributes.price;
   const hasListingState = !!listing.attributes.state;
@@ -75,11 +78,12 @@ const BookingPanel = props => {
   const { formattedPrice, priceTitle } = priceData(price, intl);
   const isBook = !!parse(location.search).book;
 
+  // eslint-disable-next-line no-extra-boolean-cast
   const subTitleText = !!subTitle
     ? subTitle
     : showClosedListingHelpText
-    ? intl.formatMessage({ id: 'BookingPanel.subTitleClosedListing' })
-    : null;
+      ? intl.formatMessage({ id: 'BookingPanel.subTitleClosedListing' })
+      : null;
 
   const isNightly = unitType === LINE_ITEM_NIGHT;
   const isDaily = unitType === LINE_ITEM_DAY;
@@ -87,8 +91,8 @@ const BookingPanel = props => {
   const unitTranslationKey = isNightly
     ? 'BookingPanel.perNight'
     : isDaily
-    ? 'BookingPanel.perDay'
-    : 'BookingPanel.perUnit';
+      ? 'BookingPanel.perDay'
+      : 'BookingPanel.perUnit';
 
   const classes = classNames(rootClassName || css.root, className);
   const titleClasses = classNames(titleClassName || css.bookingTitle);
@@ -125,6 +129,7 @@ const BookingPanel = props => {
             isOwnListing={isOwnListing}
             timeSlots={timeSlots}
             fetchTimeSlotsError={fetchTimeSlotsError}
+            isFirstBooking={isFirstBooking}
           />
         ) : null}
       </ModalInMobile>
