@@ -225,12 +225,12 @@ export const fetchTimeSlots = listingId => (dispatch, getState, sdk) => {
   // for at most 180 days from now. If max number of bookable
   // day exceeds 90, a second request is made.
 
-  const maxTimeSlots = 90;
+  const maxTimeSlots = 5;
   // booking range: today + bookable days -1
   const bookingRange = config.dayCountAvailableForBooking - 1;
   const timeSlotsRange = Math.min(bookingRange, maxTimeSlots);
 
-  const start = moment
+  const start = moment()
     .utc()
     .startOf('day')
     .toDate();
@@ -254,9 +254,9 @@ export const fetchTimeSlots = listingId => (dispatch, getState, sdk) => {
             .add(secondRange, 'days')
             .toDate(),
         };
-
+        
         return dispatch(timeSlotsRequest(secondParams)).then(secondBatch => {
-          const combined = timeSlots.concat(secondBatch);
+          const combined = timeSlots.concat(secondBatch);          
           dispatch(fetchTimeSlotsSuccess(combined));
         });
       } else {

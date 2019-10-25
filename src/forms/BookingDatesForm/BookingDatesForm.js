@@ -314,7 +314,7 @@ export class BookingDatesFormComponent extends Component {
           );
 
           const classDate = classNames(css.dateBook, css.specialBook);
-    
+
           return (
             <Form onSubmit={handleSubmit} className={classes}>
               {timeSlotsError}
@@ -330,7 +330,8 @@ export class BookingDatesFormComponent extends Component {
                     placeholderText={moment().format('DD/MM/YYYY')}     
                     format={identity}
                     validate= {composeValidators(required('Required'), bookingDateRequired('Date is not valid'))}       
-                    timeSlots={createAvailableTimeSlots(90)}
+                    //timeSlots={createAvailableTimeSlots(90)}
+                    timeSlots={timeSlots}
                   />
                   <FieldSelect
                     className={css.hourBook}                    
@@ -359,7 +360,8 @@ export class BookingDatesFormComponent extends Component {
                     placeholderText={moment().add(1, "day").format('DD/MM/YYYY')}
                     format={identity}
                     validate= {composeValidators(required('Required'), bookingDateRequired('Date is not valid'))}
-                    timeSlots={createAvailableTimeSlots(90)}
+                    //timeSlots={createAvailableTimeSlots(90)}
+                    timeSlots={timeSlots}
                   />                                   
                   <FieldSelect
                     className={css.hourBook} 

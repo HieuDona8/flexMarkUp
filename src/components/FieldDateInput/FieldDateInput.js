@@ -59,7 +59,7 @@ class FieldDateInputComponent extends Component {
     };
     const classes = classNames(rootClassName || css.fieldRoot, className);
     const errorClasses = classNames({ [css.mobileMargins]: useMobileMargins });
-
+    
     return (
       <div className={classes}>
         {label ? (
