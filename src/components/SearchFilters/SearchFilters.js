@@ -83,7 +83,7 @@ const SearchFiltersComponent = props => {
   const hasNoResult = listingsAreLoaded && resultsCount === 0;
   const classes = classNames(rootClassName || css.root, { [css.longInfo]: hasNoResult }, className);
 
-  //them label
+  //add label
   const capacityLabel = intl.formatMessage({
     id: 'SearchFilters.capacityLabel',
   })
@@ -100,7 +100,7 @@ const SearchFiltersComponent = props => {
     id: 'SearchFilters.keywordLabel',
   });
 
-  //khoi tao
+  //init capacity
   const initialCapacity = capacityFilter 
     ? initialValue(urlQueryParams, capacityFilter.paramName)
     : null;
@@ -188,7 +188,7 @@ const SearchFiltersComponent = props => {
     />
   ) : null;
 
-  //them vao capacityLabel
+  //add capacityLabel
   const capacityFilterElement = capacityFilter ? (
     <SelectSingleFilter
       urlParam={capacityFilter.paramName}
@@ -277,8 +277,7 @@ const SearchFiltersComponent = props => {
         {amenitiesFilterElement}
         {priceFilterElement}
         {dateRangeFilterElement}
-        {keywordFilterElement}
-        {/* thêm vào */}
+        {keywordFilterElement}        
         {capacityFilterElement}
         {toggleSearchFiltersPanelButton}
       </div>
@@ -328,8 +327,8 @@ SearchFiltersComponent.propTypes = {
   resultsCount: number,
   searchingInProgress: bool,
   onManageDisableScrolling: func.isRequired,
-  categoriesFilter: propTypes.filterConfig,/////
-  amenitiesFilter: propTypes.filterConfig,/////////
+  categoriesFilter: propTypes.filterConfig,
+  amenitiesFilter: propTypes.filterConfig,
   priceFilter: propTypes.filterConfig,
   dateRangeFilter: propTypes.filterConfig,
   isSearchFiltersPanelOpen: bool,

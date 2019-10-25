@@ -35,7 +35,10 @@ const EditListingCapacityPanel = props => {
       values={{ listingTitle: <ListingLink listing={listing} /> }}
     />
   ) : (
-    <FormattedMessage id="EditListingCapacityPanel.createListingTitle" />
+    <FormattedMessage 
+      id="EditListingCapacityPanel.createListingTitle" 
+      values={{ listingTitle: <ListingLink listing={listing} /> }}
+    />
   );
 
   return (

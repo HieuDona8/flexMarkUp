@@ -60,7 +60,7 @@ export const getListingsById = (state, listingIds) => {
  * @return {Array<Object>} denormalised entities
  */
 export const getMarketplaceEntities = (state, entityRefs) => {
-  const { entities } = state.marketplaceData;
+  const { entities } = state.marketplaceData;  
   const throwIfNotFound = false;
   return denormalisedEntities(entities, entityRefs, throwIfNotFound);
 };

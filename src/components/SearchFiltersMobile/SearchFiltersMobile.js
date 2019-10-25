@@ -208,11 +208,13 @@ class SearchFiltersMobileComponent extends Component {
     const initialValue = (queryParams, paramName) => {
       return queryParams[paramName];
     };
-    //them label
+
+    //add label
     const capacityLabel = intl.formatMessage({
       id: 'SearchFilters.capacityLabel',
     })
-    //khoi tao
+
+    //init capacity
     const initialCapacity = capacityFilter 
       ? initialValue(urlQueryParams, capacityFilter.paramName)
       : null;
@@ -227,16 +229,15 @@ class SearchFiltersMobileComponent extends Component {
       history.push(createResourceLocatorString('SearchPage', routeConfiguration(), {}, queryParams));
     };
 
-    //them vao capacityLabel
+    //add filter capacity
     const capacityFilterElement = capacityFilter ? (
       <SelectSingleFilter
         urlParam={capacityFilter.paramName}
         label={capacityLabel}
-        onSelect={handleSelectOption}
-        showAsPopup
+        onSelect={handleSelectOption}        
         options={capacityFilter.options}
         initialValue={initialCapacity}
-        //contentPlacementOffset={FILTER_DROPDOWN_OFFSET}
+        liveEdit        
       />
     ) : null;
 
