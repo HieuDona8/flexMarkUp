@@ -954,15 +954,15 @@
   "UserDisplayName.banned": "Banned user",
   "UserDisplayName.deleted": "Deleted user",
   "EditListingWizard.tabLabelCapacity": "Capacity",
-  "EditListingCapacityPanel.createListingTitle": "Edit The Capacity of Sauna",
+  "EditListingCapacityPanel.createListingTitle": "Edit The Capacity of {listingTitle}",
   "EditListingWizard.saveEditCapacity": "Save change",
   "EditListingCapacityForm.capacityPlaceholder": "Choose your capacity",
   "EditListingCapacityForm.capacityRequired": "Required Choose",
   "EditListingWizard.saveNewCapacity": "Save Capacity",
-  "EditListingCapacityPanel.title": "Create The Capacity of Sauna",
+  "EditListingCapacityPanel.title": "Create The Capacity of {listingTitle}",
   "SearchFilters.capacityLabel": "Capacity",
   "SearchFiltersPanel.myOption": "My Options",
-  "ListingPage.capacityTitle": "Title listing page capacity",
+  "ListingPage.capacityTitle": "Capacity",
   "TopbarDesktop.myPage": "My Page",
   "BookingDatesForm.hourStartPlaceholder": "00:00"
 }

@@ -553,10 +553,10 @@ export const requestFetchAvailabilityExceptions = fetchParams => (dispatch, getS
 
   return sdk.availabilityExceptions
     .query({ listingId, start, end }, { expand: true })
-    .then(response => {
+    .then(response => {      
       const exceptions = denormalisedResponseEntities(response).map(availabilityException => ({
         availabilityException,
-      }));
+      }));      
       return dispatch(fetchAvailabilityExceptionsSuccess({ data: { monthId, exceptions } }));
     })
     .catch(e => {
