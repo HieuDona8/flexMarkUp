@@ -246,8 +246,7 @@ class ManageAvailabilityCalendar extends Component {
       const end = momentToUTCDate(endMoment);
 
       // Fetch AvailabilityExceptions for this month
-      availability.onFetchAvailabilityExceptions({ listingId, start, end });
-
+      availability.onFetchAvailabilityExceptions({ listingId, start, end });      
       // Fetch Bookings if the month is within bookable range (180 days)
       if (isMonthInRange(startMoment, TODAY_MOMENT, END_OF_BOOKING_RANGE_MOMENT)) {
         const endMomentForBookings = isAfterEndOfBookingRange(nextMonthMoment)

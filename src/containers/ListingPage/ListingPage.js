@@ -110,7 +110,7 @@ export class ListingPageComponent extends Component {
     
     const listingId = new UUID(params.id);
     const listing = getListing(listingId);
-    
+  
     //add time to Date
     const { startDate, endDate ,...bookingData } = values;
     const initialValues = {
@@ -128,9 +128,9 @@ export class ListingPageComponent extends Component {
     // Customize checkout page state with current listing and selected bookingDates
     const { setInitialValues } = findRouteByRouteName('CheckoutPage', routes);
     callSetInitialValues(setInitialValues, initialValues);
+
     // Clear previous Stripe errors from store if there is any
     onInitializeCardPaymentData();
-    
     // Redirect to CheckoutPage
     history.push(
       createResourceLocatorString(
@@ -203,6 +203,7 @@ export class ListingPageComponent extends Component {
       amenitiesConfig,
       capacityConfig,
       isFirstBooking,
+
     } = this.props;
         
     const listingId = new UUID(rawParams.id);
@@ -342,7 +343,8 @@ export class ListingPageComponent extends Component {
     const { formattedPrice, priceTitle } = priceData(price, intl);
 
     const handleBookingSubmit = values => {
-      //modifine booking submit
+
+      //modifine booking submit      
       const isCurrentlyClosed = currentListing.attributes.state === LISTING_STATE_CLOSED;
       if (isOwnListing || isCurrentlyClosed) {
         window.scrollTo(0, 0);
@@ -566,7 +568,6 @@ const mapStateToProps = state => {
     fetchFirstBookingSuccess,
   } = state.ListingPage;
   const { currentUser } = state.user;
-
 
   const getListing = id => {
     const ref = { id, type: 'listing' };

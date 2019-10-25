@@ -73,6 +73,7 @@ export const EditListingPageComponent = props => {
 
   const listingId = page.submittedListingId || (id ? new UUID(id) : null);
   const currentListing = ensureOwnListing(getOwnListing(listingId));
+
   const { state: currentListingState } = currentListing.attributes;
 
   const isPastDraft = currentListingState && currentListingState !== LISTING_STATE_DRAFT;

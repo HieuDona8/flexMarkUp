@@ -236,7 +236,7 @@ export class SearchPageComponent extends Component {
               priceFilter: filters.priceFilter,
               dateRangeFilter: filters.dateRangeFilter,
               keywordFilter: filters.keywordFilter,
-              capacityFilter: filters.capacityFilter,///////
+              capacityFilter: filters.capacityFilter,
             }}
           />
           <ModalInMobile

@@ -59,7 +59,7 @@ export const EditListingCapacityFormComponent = props => (
             id="capacity"
             validate={capacityRequired}
           >
-            <option value="">{capacityPlaceholder}</option>
+            <option value="" disabled>{capacityPlaceholder}</option>
             {capacityOptions.map(c => (
               <option key={c.key} value={c.key}>
                 {c.label}
@@ -87,8 +87,8 @@ EditListingCapacityFormComponent.defaultProps = {
   updateError: null,
 };
 
-EditListingCapacityFormComponent.propTypes = {
-  intl: intlShape.isRequired, //tại sao lại comment
+EditListingCapacityFormComponent.propTypes = {    
+  intl: intlShape.isRequired,
   onSubmit: func.isRequired,
   saveActionMsg: string.isRequired,
   updated: bool.isRequired,
