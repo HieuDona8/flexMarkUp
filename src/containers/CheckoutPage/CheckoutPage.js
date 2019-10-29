@@ -416,7 +416,7 @@ export class CheckoutPageComponent extends Component {
       country,
       saveAfterOnetimePayment,      
     } = formValues;
-
+    
     // Billing address is recommended.
     // However, let's not assume that <StripePaymentAddress> data is among formValues.
     // Read more about this from Stripe's docs
@@ -449,7 +449,7 @@ export class CheckoutPageComponent extends Component {
       message,
       paymentIntent,
       selectedPaymentMethod: paymentMethod,
-      saveAfterOnetimePayment: !!saveAfterOnetimePayment,
+      saveAfterOnetimePayment: !!saveAfterOnetimePayment && saveAfterOnetimePayment.length > 0,
     };
 
 
@@ -598,7 +598,7 @@ export class CheckoutPageComponent extends Component {
     // (i.e. have an id)
     const tx = existingTransaction.booking ? existingTransaction : speculatedTransaction;
     const txBooking = ensureBooking(tx.booking);    
-    console.log("my breakdown: ", tx);
+    
     const breakdown =
       tx.id && txBooking.id ? (
         <BookingBreakdown

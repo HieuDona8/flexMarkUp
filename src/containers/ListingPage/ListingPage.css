@@ -587,6 +587,14 @@
 }
 
 /*capacity css*/
-.sectionCapacity{
-  color: red;
+.capacityTitle{
+  @apply --marketplaceH3FontStyles;
+  color: var(--matterColorAnti);
+
+  margin-top: 0;
+  margin-bottom: 16px;
+  @media (--viewportMedium) {
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
 }
