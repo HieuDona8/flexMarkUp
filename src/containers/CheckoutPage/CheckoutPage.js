@@ -30,7 +30,9 @@ import {
   transactionInitiateOrderStripeErrors,
 } from '../../util/errors';
 import { formatMoney } from '../../util/currency';
-import { TRANSITION_ENQUIRE, txIsPaymentPending, txIsPaymentExpired } from '../../util/transaction';
+import { TRANSITION_ENQUIRY_FIRST_TIME,
+  TRANSITION_ENQUIRY,
+  TRANSITION_ENQUIRE, txIsPaymentPending, txIsPaymentExpired } from '../../util/transaction';
 import {
   AvatarMedium,
   BookingBreakdown,
@@ -744,7 +746,11 @@ export class CheckoutPageComponent extends Component {
     const detailsSubTitle = `${formattedPrice} ${intl.formatMessage({ id: unitTranslationKey })}`;
 
     const showInitialMessageInput = !(
-      existingTransaction && existingTransaction.attributes.lastTransition === TRANSITION_ENQUIRE
+      existingTransaction && (
+        existingTransaction.attributes.lastTransition === TRANSITION_ENQUIRE ||
+        existingTransaction.attributes.lastTransition === TRANSITION_ENQUIRY_FIRST_TIME||
+        existingTransaction.attributes.lastTransition === TRANSITION_ENQUIRY
+      )
     );
 
     // Get first and last name of the current user and use it in the StripePaymentForm to autofill the name field

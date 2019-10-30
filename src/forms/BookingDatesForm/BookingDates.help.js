@@ -43,24 +43,76 @@ export const getCurrentDateStringInDesiredTimezone = ({ date, timezone }) => {
   return new Date(finalStr.join(' '));
 };
 
-//create new TimeSlot:
+
+// export const createNewTimeSlots = timeSlots => { 
+//   const arrTimeSlot = [];
+//   timeSlots.forEach((timeSlot, index) => {        
+//     const curentStartDay = timeSlot.attributes.start;
+//     const curentEndDay = timeSlot.attributes.end;        
+//     const timeDiff = moment(curentEndDay).diff(moment(curentStartDay),"days");
+//     for(let i = 0 ;i < timeDiff; i++){
+//       const start = new Date(moment(curentStartDay).add(i, "days"));
+//       const end = new Date(moment(curentStartDay).add(i, "days"));
+//       const attributes = { start, end, seats: 1, type: "time-slot/time" }
+//       const result = { attributes, id: "myid", type: "timeSlot" }
+//       arrTimeSlot.push(result);
+//     }                        
+//   });   
+//   return arrTimeSlot;   
+// };
+
+
+///
 export const createNewTimeSlots = timeSlots => { 
+  
   const arrTimeSlot = [];
   timeSlots.forEach((timeSlot, index) => {        
+
     const curentStartDay = timeSlot.attributes.start;
     const curentEndDay = timeSlot.attributes.end;        
+
     const timeDiff = moment(curentEndDay).diff(moment(curentStartDay),"days");
-    for(let i = 0 ;i < timeDiff; i++){
-      const start = new Date(moment(curentStartDay).add(i, "days"));
-      const end = new Date(moment(curentStartDay).add(i, "days"));
-      const attributes = { start, end, seats: 2, type: "time-slot/time" }
-      const result = { attributes, id: "myid", type: "timeSlot" }
-      arrTimeSlot.push(result);
-    }                        
+
+    if((curentEndDay.getHours()+curentEndDay.getMinutes())===0){
+      for(let i = 0 ;i < timeDiff; i++){
+        const start = new Date(moment(curentStartDay).add(i, "days"));
+        const end = new Date(moment(curentStartDay).add(i, "days"));
+        const attributes = { start, end, seats: 1, type: "time-slot/time" }
+        const result = { attributes, id: "myid", type: "timeSlot" }
+        arrTimeSlot.push(result);
+      }
+    }else{
+      for(let i = 0 ;i <= timeDiff; i++){
+        const start = new Date(moment(curentStartDay).add(i, "days"));
+        const end = new Date(moment(curentStartDay).add(i, "days"));
+        const attributes = { start, end, seats: 1, type: "time-slot/time" }
+        const result = { attributes, id: "myid", type: "timeSlot" }
+        arrTimeSlot.push(result);
+      }
+    }
   });   
   return arrTimeSlot;   
 };
 
+//function check point start or end belong timeSlots
+export const isHaveTimeBooked = (timeSlots, startDate, endDate, hourStart, hourEnd) => {
+  //find point end
+  timeSlots.some((timeSlot, index) => {    
+    const curentEndDay = timeSlot.attributes.end;
+    const nextTimeSlot = (index +1) < timeSlots.length ? timeSlots[index+1] : null;
+    const nextStartDay = nextTimeSlot ? nextTimeSlot.attributes.start : null;
+
+    if(moment(curentEndDay).isSame(startDate, 'day')){
+      const hourBookedEnd = curentEndDay.getHours();
+      const minuteBookedEnd = curentEndDay.getMinutes();
+
+
+    
+    }
+  })
+
+  return false;
+}
 
 export const createRangeDay = (startDate, endDate) =>{
   const timeDiff = moment(endDate).diff(moment(startDate),"days");

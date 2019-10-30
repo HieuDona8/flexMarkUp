@@ -33,6 +33,7 @@ export class EditListingAvailabilityFormComponent extends Component {
             listingId,
           } = fieldRenderProps;
 
+          
           const errorMessage = updateError ? (
             <p className={css.error}>
               <FormattedMessage id="EditListingAvailabilityForm.updateFailed" />

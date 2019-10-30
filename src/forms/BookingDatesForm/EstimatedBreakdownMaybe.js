@@ -142,7 +142,7 @@ const EstimatedBreakdownMaybe = props => {
   }
 
   const tx = estimatedTransaction(unitType, startDate.date, endDate.date, unitPrice, quantity, isFirstBooking, numberPerson);
-  console.log("tx: ", tx)
+  
   return (
     <BookingBreakdown
       className={css.receipt}
