@@ -41,6 +41,7 @@ export class SearchPageComponent extends Component {
     this.state = {
       isSearchMapOpenOnMobile: props.tab === 'map',
       isMobileModalOpen: false,
+      isOpenMap: true,
     };
 
     this.searchMapListingsInProgress = false;
@@ -49,6 +50,13 @@ export class SearchPageComponent extends Component {
     this.onMapMoveEnd = debounce(this.onMapMoveEnd.bind(this), SEARCH_WITH_MAP_DEBOUNCE);
     this.onOpenMobileModal = this.onOpenMobileModal.bind(this);
     this.onCloseMobileModal = this.onCloseMobileModal.bind(this);
+  }
+
+  openMap(){
+    const stateMap = ! this.state.isOpenMap;
+    this.setState({
+      isOpenMap: stateMap
+    });
   }
 
   filters() {
@@ -217,6 +225,8 @@ export class SearchPageComponent extends Component {
         />
         <div className={css.container}>
           <MainPanel
+            stateOpenMap = { this.state.isOpenMap }
+            handleShowMap = { this.openMap.bind(this)}
             urlQueryParams={validQueryParams}
             listings={listings}
             searchInProgress={searchInProgress}
@@ -239,33 +249,35 @@ export class SearchPageComponent extends Component {
               capacityFilter: filters.capacityFilter,
             }}
           />
-          <ModalInMobile
-            className={css.mapPanel}
-            id="SearchPage.map"
-            isModalOpenOnMobile={this.state.isSearchMapOpenOnMobile}
-            onClose={() => this.setState({ isSearchMapOpenOnMobile: false })}
-            showAsModalMaxWidth={MODAL_BREAKPOINT}
-            onManageDisableScrolling={onManageDisableScrolling}
-          >
-            <div className={css.mapWrapper}>
-              {shouldShowSearchMap ? (
-                <SearchMap
-                  reusableContainerClassName={css.map}
-                  activeListingId={activeListingId}
-                  bounds={bounds}
-                  center={origin}
-                  isSearchMapOpenOnMobile={this.state.isSearchMapOpenOnMobile}
-                  location={location}
-                  listings={mapListings || []}
-                  onMapMoveEnd={this.onMapMoveEnd}
-                  onCloseAsModal={() => {
-                    onManageDisableScrolling('SearchPage.map', false);
-                  }}
-                  messages={intl.messages}
-                />
-              ) : null}
-            </div>
-          </ModalInMobile>
+          {this.state.isOpenMap && 
+            <ModalInMobile
+              className={css.mapPanel}
+              id="SearchPage.map"
+              isModalOpenOnMobile={this.state.isSearchMapOpenOnMobile}
+              onClose={() => this.setState({ isSearchMapOpenOnMobile: false })}
+              showAsModalMaxWidth={MODAL_BREAKPOINT}
+              onManageDisableScrolling={onManageDisableScrolling}
+            >
+              <div className={css.mapWrapper}>
+                {shouldShowSearchMap ? (
+                  <SearchMap
+                    reusableContainerClassName={css.map}
+                    activeListingId={activeListingId}
+                    bounds={bounds}
+                    center={origin}
+                    isSearchMapOpenOnMobile={this.state.isSearchMapOpenOnMobile}
+                    location={location}
+                    listings={mapListings || []}
+                    onMapMoveEnd={this.onMapMoveEnd}
+                    onCloseAsModal={() => {
+                      onManageDisableScrolling('SearchPage.map', false);
+                    }}
+                    messages={intl.messages}
+                  />
+                ) : null}
+              </div>
+            </ModalInMobile>
+          }          
         </div>
       </Page>
     );

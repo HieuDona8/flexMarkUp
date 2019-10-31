@@ -20,6 +20,11 @@ class MainPanel extends Component {
     this.state = { isSearchFiltersPanelOpen: false };
   }
 
+  openMap(){
+    const { handleShowMap } = this.props;
+    handleShowMap();
+  }
+  
   render() {
     const {
       className,
@@ -39,6 +44,7 @@ class MainPanel extends Component {
       showAsModalMaxWidth,
       primaryFilters,
       secondaryFilters,
+      stateOpenMap
     } = this.props;
 
     const isSearchFiltersPanelOpen = !!secondaryFilters && this.state.isSearchFiltersPanelOpen;
@@ -103,6 +109,12 @@ class MainPanel extends Component {
           {...primaryFilters}
           {...secondaryFilters}
         />
+        <div className={css.showMap}>
+          <label className={css.switch}>
+            <input type="checkbox" id="checkBox" defaultChecked onClick ={this.openMap.bind(this)} />
+            <span className={css.slider}></span>
+          </label>
+        </div>
         {isSearchFiltersPanelOpen ? (
           <div className={classNames(css.searchFiltersPanel)}>
             <SearchFiltersPanel
@@ -125,6 +137,7 @@ class MainPanel extends Component {
               </h2>
             ) : null}
             <SearchResultsPanel
+              stateOpenMap = {stateOpenMap}
               className={css.searchListingsPanel}
               listings={listings}
               pagination={listingsAreLoaded ? pagination : null}
