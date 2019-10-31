@@ -30,7 +30,9 @@ import {
   transactionInitiateOrderStripeErrors,
 } from '../../util/errors';
 import { formatMoney } from '../../util/currency';
-import { TRANSITION_ENQUIRE, txIsPaymentPending, txIsPaymentExpired } from '../../util/transaction';
+import { TRANSITION_ENQUIRY_FIRST_TIME,
+  TRANSITION_ENQUIRY,
+  TRANSITION_ENQUIRE, txIsPaymentPending, txIsPaymentExpired } from '../../util/transaction';
 import {
   AvatarMedium,
   BookingBreakdown,
@@ -416,7 +418,7 @@ export class CheckoutPageComponent extends Component {
       country,
       saveAfterOnetimePayment,      
     } = formValues;
-
+    
     // Billing address is recommended.
     // However, let's not assume that <StripePaymentAddress> data is among formValues.
     // Read more about this from Stripe's docs
@@ -449,7 +451,7 @@ export class CheckoutPageComponent extends Component {
       message,
       paymentIntent,
       selectedPaymentMethod: paymentMethod,
-      saveAfterOnetimePayment: !!saveAfterOnetimePayment,
+      saveAfterOnetimePayment: !!saveAfterOnetimePayment && saveAfterOnetimePayment.length > 0,
     };
 
 
@@ -598,7 +600,7 @@ export class CheckoutPageComponent extends Component {
     // (i.e. have an id)
     const tx = existingTransaction.booking ? existingTransaction : speculatedTransaction;
     const txBooking = ensureBooking(tx.booking);    
-    console.log("my breakdown: ", tx);
+    
     const breakdown =
       tx.id && txBooking.id ? (
         <BookingBreakdown
@@ -744,7 +746,11 @@ export class CheckoutPageComponent extends Component {
     const detailsSubTitle = `${formattedPrice} ${intl.formatMessage({ id: unitTranslationKey })}`;
 
     const showInitialMessageInput = !(
-      existingTransaction && existingTransaction.attributes.lastTransition === TRANSITION_ENQUIRE
+      existingTransaction && (
+        existingTransaction.attributes.lastTransition === TRANSITION_ENQUIRE ||
+        existingTransaction.attributes.lastTransition === TRANSITION_ENQUIRY_FIRST_TIME||
+        existingTransaction.attributes.lastTransition === TRANSITION_ENQUIRY
+      )
     );
 
     // Get first and last name of the current user and use it in the StripePaymentForm to autofill the name field

@@ -89,6 +89,11 @@ export const bookingDateRequired = inValidDateMessage => value => {
   return !dateIsValid ? inValidDateMessage : VALID;
 };
 
+export const bookingDateCheck = inValidDateMessage => value => {
+  const dateIsValid = value && value.date instanceof Date;
+  return !dateIsValid ? inValidDateMessage : VALID;
+};
+
 export const bookingDatesRequired = (inValidStartDateMessage, inValidEndDateMessage) => value => {
   const startDateIsValid = value && value.startDate instanceof Date;
   const endDateIsValid = value && value.endDate instanceof Date;
@@ -225,6 +230,10 @@ export const validSGID = message => value => {
 
 export const bookingPerson = inValidMessage => value => {  
   return value < 1 ? inValidMessage : null;  
+};
+
+export const bookingPersonBig = inValidMessage => value => {  
+  return value > 10 ? inValidMessage : null;  
 };
 
 export const composeValidators = (...validators) => value =>

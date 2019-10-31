@@ -1,8 +1,13 @@
 @import '../../marketplace.css';
 
 .form{
+  margin-top: 80px;
   height: 300px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.form > button{
+  width: 234px;
 }

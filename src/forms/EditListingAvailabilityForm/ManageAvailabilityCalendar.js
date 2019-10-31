@@ -120,9 +120,12 @@ const isBooked = (bookings, day) => {
     const start = booking.attributes.start;
     const end = booking.attributes.end;
     const dayInUTC = day.clone().utc();
-
+    
+    if((end.getHours()+end.getMinutes()) === 0){
+      return dayInUTC.isBetween(moment(start).utc(), moment(end).utc(), "day", '[)');  
+    }
     // '[)' means that the range start is inclusive and range end is exclusive
-    return dayInUTC.isBetween(moment(start).utc(), moment(end).utc(), null, '[)');
+    return dayInUTC.isBetween(moment(start).utc(), moment(end).utc(), "day", '[]');
   });
 };
 
@@ -150,7 +153,6 @@ const isBlocked = (availabilityPlan, exception, date) => {
 
 const dateModifiers = (availabilityPlan, exceptions, bookings, date) => {
   const exception = findException(exceptions, date);
-
   return {
     isOutsideRange: isOutsideRange(date),
     isSameDay: isSameDay(date, TODAY_MOMENT),
@@ -162,9 +164,10 @@ const dateModifiers = (availabilityPlan, exceptions, bookings, date) => {
 };
 
 const renderDayContents = (calendar, availabilityPlan) => date => {
+  
   // This component is for day/night based processes. If time-based process is used,
   // you might want to deal with local dates using monthIdString instead of monthIdStringInUTC.
-  const { exceptions = [], bookings = [] } = calendar[monthIdStringInUTC(date)] || {};
+  const { exceptions = [], bookings = [] } = calendar[monthIdStringInUTC(date)] || {};  
   const { isOutsideRange, isSameDay, isBlocked, isBooked, isInProgress, isFailed } = dateModifiers(
     availabilityPlan,
     exceptions,

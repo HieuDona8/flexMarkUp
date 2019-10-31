@@ -242,9 +242,9 @@ export const fetchTimeSlots = listingId => (dispatch, getState, sdk) => {
   const params = { listingId, start, end };
 
   return dispatch(timeSlotsRequest(params))
-    .then(timeSlots => {
-      const secondRequest = bookingRange > maxTimeSlots;
-
+    .then(timeSlots => {      
+      //const secondRequest = bookingRange > maxTimeSlots;
+      const secondRequest = false;
       if (secondRequest) {
         const secondRange = Math.min(maxTimeSlots, bookingRange - maxTimeSlots);
         const secondParams = {

@@ -37,13 +37,18 @@ const LineItemProviderCommissionMaybe = props => {
 
     const commission = providerCommissionLineItem.lineTotal;
     const formattedCommission = commission ? formatMoney(intl, commission) : null;
+    const newFormattedCommission = formattedCommission 
+    ? formattedCommission.substring(0,1) === '-' 
+      ? formattedCommission.substring(1, formattedCommission.length) 
+      : formattedCommission
+    : null
 
     commissionItem = (
       <div className={css.lineItem}>
         <span className={css.itemLabel}>
           <FormattedMessage id="BookingBreakdown.commission" />
         </span>
-        <span className={css.itemValue}>{formattedCommission}</span>
+        <span className={css.itemValue}>{newFormattedCommission}</span>
       </div>
     );
   }

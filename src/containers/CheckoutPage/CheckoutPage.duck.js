@@ -305,8 +305,7 @@ export const speculateTransaction = params => (dispatch, getState, sdk) => {
       if (entities.length !== 1) {
         throw new Error('Expected a resource in the sdk.transactions.initiateSpeculative response');
       }
-      const tx = entities[0];
-      console.log("transaction!!: ",tx);
+      const tx = entities[0];      
       dispatch(speculateTransactionSuccess(tx));
     })
     .catch(e => {
