@@ -167,8 +167,7 @@ const renderDayContents = (calendar, availabilityPlan) => date => {
   
   // This component is for day/night based processes. If time-based process is used,
   // you might want to deal with local dates using monthIdString instead of monthIdStringInUTC.
-  const { exceptions = [], bookings = [] } = calendar[monthIdStringInUTC(date)] || {};
-  //console.log("myBooking: ",bookings)
+  const { exceptions = [], bookings = [] } = calendar[monthIdStringInUTC(date)] || {};  
   const { isOutsideRange, isSameDay, isBlocked, isBooked, isInProgress, isFailed } = dateModifiers(
     availabilityPlan,
     exceptions,

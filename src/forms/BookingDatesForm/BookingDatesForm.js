@@ -45,7 +45,7 @@ export class BookingDatesFormComponent extends Component {
     this.state = { 
       focusedInput: null,
       timeRangeError: null,
-     };
+    };
     this.handleFormSubmit = this.handleFormSubmit.bind(this);
     this.onFocusedInputChange = this.onFocusedInputChange.bind(this);
 
@@ -225,10 +225,10 @@ export class BookingDatesFormComponent extends Component {
                       const curentDady = new Date();
                       const hour = curentDady.getMinutes() > 30 ? curentDady.getHours() + 1 : curentDady.getHours();
                       const minute = curentDady.getMinutes() > 30 ? 0 : 30;                                            
-                      this.availabeDateTimeSlotsStart = generateHourOptions(moment().startOf('day'), { hour: hour, minute: minute }, { hour: 23, minute: 30 })
+                      this.availabeDateTimeSlotsStart = generateHourOptions(moment().startOf('day'), { hour: hour, minute: minute }, { hour: 23, minute: 30 });
                     }
                     else{
-                      this.availabeDateTimeSlotsStart = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: 23, minute: 30 })
+                      this.availabeDateTimeSlotsStart = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: 23, minute: 30 });
                     }
 
                     //check point timeSlots
@@ -243,7 +243,7 @@ export class BookingDatesFormComponent extends Component {
                         const minuteStart = nextStartDay.getMinutes();
                         const hourEnd = curentEndDay.getHours();
                         const minuteEnd = curentEndDay.getMinutes();    
-                        const arrayEnd = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: hourEnd, minute: minuteEnd })
+                        const arrayEnd = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: hourEnd, minute: minuteEnd });
                         const arrayStart = generateHourOptions(moment().startOf('day'), { hour: hourStart, minute: minuteStart }, { hour: 23, minute: 30 });
                         this.availabeDateTimeSlotsStart = arrayEnd.concat(arrayStart);                        
                         return true;
@@ -259,7 +259,7 @@ export class BookingDatesFormComponent extends Component {
                       if(moment(curentEndDay).isSame(startDate.date, 'day')){
                         const hour = curentEndDay.getHours();
                         const minute = curentEndDay.getMinutes();                                            
-                        this.availabeDateTimeSlotsStart = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: hour, minute: minute })                        
+                        this.availabeDateTimeSlotsStart = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: hour, minute: minute });
                         return true;
                       }
                     });
@@ -272,10 +272,10 @@ export class BookingDatesFormComponent extends Component {
                       const curentDady = new Date();
                       const hour = curentDady.getMinutes() > 30 ? curentDady.getHours() + 1 : curentDady.getHours();
                       const minute = curentDady.getMinutes() > 30 ? 0 : 30;                                            
-                      this.availabeDateTimeSlotsEnd = generateHourOptions(moment().startOf('day'), { hour: hour, minute: minute }, { hour: 23, minute: 30 })
+                      this.availabeDateTimeSlotsEnd = generateHourOptions(moment().startOf('day'), { hour: hour, minute: minute }, { hour: 23, minute: 30 });
                     }
                     else{
-                      this.availabeDateTimeSlotsEnd = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: 23, minute: 30 })
+                      this.availabeDateTimeSlotsEnd = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: 23, minute: 30 });
                     }
 
                     //check point timeSlots
@@ -290,7 +290,7 @@ export class BookingDatesFormComponent extends Component {
                         const minuteStart = nextStartDay.getMinutes();
                         const hourEnd = curentEndDay.getHours();
                         const minuteEnd = curentEndDay.getMinutes();    
-                        const arrayEnd = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: hourEnd, minute: minuteEnd })
+                        const arrayEnd = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: hourEnd, minute: minuteEnd });
                         const arrayStart = generateHourOptions(moment().startOf('day'), { hour: hourStart, minute: minuteStart }, { hour: 23, minute: 30 });
                         this.availabeDateTimeSlotsEnd = arrayEnd.concat(arrayStart);                        
                         return true;
@@ -306,7 +306,7 @@ export class BookingDatesFormComponent extends Component {
                       if(moment(curentEndDay).isSame(endDate.date, 'day')){
                         const hour = curentEndDay.getHours();
                         const minute = curentEndDay.getMinutes();                                            
-                        this.availabeDateTimeSlotsEnd = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: hour, minute: minute })                        
+                        this.availabeDateTimeSlotsEnd = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: hour, minute: minute });                        
                         return true;
                       }
                     });
@@ -323,17 +323,17 @@ export class BookingDatesFormComponent extends Component {
                     //algorithm complexity n
                     const iStart = newTimeSlots.findIndex( value =>{
                       const timeSlotDay = value.attributes.start;
-                      return isSameDay(arrayDate[0], timeSlotDay)                      
-                    })
+                      return isSameDay(arrayDate[0], timeSlotDay);                      
+                    });
                     const iEnd = newTimeSlots.findIndex( value =>{
                       const timeSlotDay = value.attributes.start;
-                      return isSameDay(arrayDate[arrayDate.length-1], timeSlotDay)                      
-                    })
+                      return isSameDay(arrayDate[arrayDate.length-1], timeSlotDay);                      
+                    });
                     if((iEnd-iStart+1) !== arrayDate.length){
                       breakPoint = false;
                       this.setState({
                         timeRangeError: 'An invalid period of time'
-                      })                      
+                      });                      
                       form.change("startDate", null);
                       form.change("endDate", null);    
                       form.change("hourStart", null);                  
@@ -350,7 +350,7 @@ export class BookingDatesFormComponent extends Component {
                       if((timeStart[0] > timeEnd[0] || ( timeStart[0] === timeEnd[0] && timeStart[1] > timeEnd[1]))){
                         this.setState({
                           timeRangeError: 'Invalid duration time (Equal/longer than 1 hour)'
-                        })
+                        });
                         form.change("hourEnd", null);                      
                       }
                       
@@ -359,7 +359,7 @@ export class BookingDatesFormComponent extends Component {
                     }else{
                       this.setState({
                         timeRangeError: null
-                      })
+                      });
                     }
                   }
 

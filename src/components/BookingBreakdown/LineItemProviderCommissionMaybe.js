@@ -36,20 +36,12 @@ const LineItemProviderCommissionMaybe = props => {
     }
 
     const commission = providerCommissionLineItem.lineTotal;
-    
-    const newCommission = commission?{ 
-      amount: commission.amount*(-1),
-      currency: commission.currency,
-      _sdkType: sdkTypes,
-    } : null;
-
-    const formattedCommission = commission ? formatMoney(intl, commission) : null;    
-
+    const formattedCommission = commission ? formatMoney(intl, commission) : null;
     const newFormattedCommission = formattedCommission 
     ? formattedCommission.substring(0,1) === '-' 
       ? formattedCommission.substring(1, formattedCommission.length) 
       : formattedCommission
-    : null    
+    : null
 
     commissionItem = (
       <div className={css.lineItem}>

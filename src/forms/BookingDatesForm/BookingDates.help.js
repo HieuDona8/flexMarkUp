@@ -1,15 +1,8 @@
 import React, { Component }  from 'react';
 import { DEFAULT_TIME_ZONE } from "../../util/types";
 import moment from 'moment';
-//import { getCurrentDateStringInDesiredTimezone } from "../../util/dates";
 
-
-export const isSameDay = (localDay, daySlot) =>{ 
-  // const convertedDay = getCurrentDateStringInDesiredTimezone({
-  //   date: localDay,
-  //   timezone: DEFAULT_TIME_ZONE
-  // });
-
+export const isSameDay = (localDay, daySlot) =>{   
   const allFormat = {
     year: 'numeric',
     month: 'numeric',
@@ -43,26 +36,6 @@ export const getCurrentDateStringInDesiredTimezone = ({ date, timezone }) => {
   return new Date(finalStr.join(' '));
 };
 
-
-// export const createNewTimeSlots = timeSlots => { 
-//   const arrTimeSlot = [];
-//   timeSlots.forEach((timeSlot, index) => {        
-//     const curentStartDay = timeSlot.attributes.start;
-//     const curentEndDay = timeSlot.attributes.end;        
-//     const timeDiff = moment(curentEndDay).diff(moment(curentStartDay),"days");
-//     for(let i = 0 ;i < timeDiff; i++){
-//       const start = new Date(moment(curentStartDay).add(i, "days"));
-//       const end = new Date(moment(curentStartDay).add(i, "days"));
-//       const attributes = { start, end, seats: 1, type: "time-slot/time" }
-//       const result = { attributes, id: "myid", type: "timeSlot" }
-//       arrTimeSlot.push(result);
-//     }                        
-//   });   
-//   return arrTimeSlot;   
-// };
-
-
-///
 export const createNewTimeSlots = timeSlots => { 
   
   const arrTimeSlot = [];
@@ -77,16 +50,16 @@ export const createNewTimeSlots = timeSlots => {
       for(let i = 0 ;i < timeDiff; i++){
         const start = new Date(moment(curentStartDay).add(i, "days"));
         const end = new Date(moment(curentStartDay).add(i, "days"));
-        const attributes = { start, end, seats: 1, type: "time-slot/time" }
-        const result = { attributes, id: "myid", type: "timeSlot" }
+        const attributes = { start, end, seats: 1, type: "time-slot/time" };
+        const result = { attributes, id: "myid", type: "timeSlot" };
         arrTimeSlot.push(result);
       }
     }else{
       for(let i = 0 ;i <= timeDiff; i++){
         const start = new Date(moment(curentStartDay).add(i, "days"));
         const end = new Date(moment(curentStartDay).add(i, "days"));
-        const attributes = { start, end, seats: 1, type: "time-slot/time" }
-        const result = { attributes, id: "myid", type: "timeSlot" }
+        const attributes = { start, end, seats: 1, type: "time-slot/time" };
+        const result = { attributes, id: "myid", type: "timeSlot" };
         arrTimeSlot.push(result);
       }
     }
@@ -94,25 +67,20 @@ export const createNewTimeSlots = timeSlots => {
   return arrTimeSlot;   
 };
 
-//function check point start or end belong timeSlots
+//function check point start or end belong timeSlots (extension code)
 export const isHaveTimeBooked = (timeSlots, startDate, endDate, hourStart, hourEnd) => {
   //find point end
   timeSlots.some((timeSlot, index) => {    
     const curentEndDay = timeSlot.attributes.end;
     const nextTimeSlot = (index +1) < timeSlots.length ? timeSlots[index+1] : null;
     const nextStartDay = nextTimeSlot ? nextTimeSlot.attributes.start : null;
-
     if(moment(curentEndDay).isSame(startDate, 'day')){
       const hourBookedEnd = curentEndDay.getHours();
       const minuteBookedEnd = curentEndDay.getMinutes();
-
-
-    
     }
-  })
-
+  });
   return false;
-}
+};
 
 export const createRangeDay = (startDate, endDate) =>{
   const timeDiff = moment(endDate).diff(moment(startDate),"days");
@@ -122,7 +90,8 @@ export const createRangeDay = (startDate, endDate) =>{
     arrDate.push(date);
   }
   return arrDate;
-}
+};
+
 //EIDT TIME
 const HOUR_FORMAT = 'hh:mm a';         
 export const generateHourOptions = (date, startTime, endTime) => {
@@ -175,47 +144,3 @@ export const generateHourOptions = (date, startTime, endTime) => {
   }
   return options;
 };
-
-export const generateDayOptions = (form , timeSlots, startDate = null, endDate = null) =>{
-  
-  if (startDate && endDate) {
-    //check range have time:
-    const myDate= timeSlots.find((item, index)=>{
-      const allFormat = {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-        timeZone: DEFAULT_TIME_ZONE
-      };    
-      const formatter = new Intl.DateTimeFormat('default', allFormat);
-      return formatter.format(item) === formatter.format(startDate.date);
-    })    
-  }
-
-  //timeSlot.find()
-  // EDIT DATE
-  // //INPUT startDate FIRST (don't have endDate)
-  if(startDate && moment(startDate.date,"MM DD YYYY h:mm:ss", true).isValid() && !endDate){                  
-    form.change("endDate", { date: new Date(moment(startDate.date)) });
-  }
-
-  // //INPUT endDay FIRST
-  if (!startDate && endDate && moment(endDate.date,"MM DD YYYY h:mm:ss", true).isValid()) {
-    form.change("startDate", { date: new Date(moment(endDate.date)) });                              
-  }
-
-  // //NOT update HAVE startDate, endDate AND start - end =>0; = 0 BECAUSE booking by time
-  // if (startDate && endDate && moment(startDate.date).diff(moment(endDate.date), "days") > 0) {
-  //   const myStarCur = moment(startDate.date).diff(moment(), "days");
-  //   //end sub => update start
-  //   if(myStarCur === this.startValue){
-  //     form.change("startDate", { date: new Date(moment(endDate.date)) });     
-  //   } else{
-  //     //start plus => update end
-  //     form.change("endDate", { date: new Date(moment(startDate.date)) });      
-  //   }
-  // }
-
-
-  
-}
