@@ -7,49 +7,35 @@ import { dateFromAPIToLocalNoon } from '../../util/dates';
 import css from './BookingBreakdown.css';
 
 const BookingPeriod = props => {
-  const { startDate, endDate, dateType } = props;
-  const timeFormatOptions =
-    dateType === DATE_TYPE_DATE
-      ? {
-          weekday: 'long', //weekday: 'short',
-        }
-      : {
-          //weekday: 'numeric',
-          hour: 'numeric',
-          minute: 'numeric',
-        };
-
+  const { startDate, endDate } = props;
+  
   const dateFormatOptions = {
+    hour: 'numeric',
+    minute: 'numeric',
     day: 'numeric',
-    month: 'numeric',//month: 'short','long'
-    year: 'numberic'
+    month: 'numeric',
+    year: 'numeric'
   };
 
   return (
     <>
       <div className={css.bookingPeriod}>
         <div className={css.bookingPeriodSection}>
-          <div className={css.dayLabel}>
+          <span className={css.dayLabel}>
             <FormattedMessage id="BookingBreakdown.bookingStart" />
-          </div>
-          <div className={css.dayInfo}>
-            <FormattedDate value={startDate} {...timeFormatOptions} />
-          </div>
-          <div className={css.itemLabel}>
+          </span>          
+          <span className={css.dayInfo}>
             <FormattedDate value={startDate} {...dateFormatOptions} />
-          </div>
+          </span>
         </div>
 
-        <div className={css.bookingPeriodSectionRigth}>
+        <div className={css.bookingPeriodSection}>
           <div className={css.dayLabel}>
             <FormattedMessage id="BookingBreakdown.bookingEnd" />
           </div>
           <div className={css.dayInfo}>
-            <FormattedDate value={endDate} {...timeFormatOptions} />
-          </div>
-          <div className={css.itemLabel}>
             <FormattedDate value={endDate} {...dateFormatOptions} />
-          </div>
+          </div>          
         </div>
       </div>
     </>

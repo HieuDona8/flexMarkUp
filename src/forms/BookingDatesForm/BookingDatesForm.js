@@ -185,7 +185,7 @@ export class BookingDatesFormComponent extends Component {
           const quantity = numberPerson && numberPerson <= 10 && numberPerson > 0 && days ? numberPerson*days : null;
 
           const bookingData =
-            quantity
+            quantity && this.state.timeRangeError === null
               ? {
                 unitType,
                 unitPrice,
@@ -217,10 +217,10 @@ export class BookingDatesFormComponent extends Component {
               <FormSpy 
                 onChange={formState => {                     
                   const { startDate, endDate, hourStart, hourEnd } = formState.values;                  
-                  const startBool = startDate && startDate.date;
-                  const endBool = endDate && endDate.date;
+                  const invalidStart = startDate && startDate.date;
+                  const invalidEnd = endDate && endDate.date;
                   //take selectTime
-                  if (startBool) {                                                                   
+                  if (invalidStart) {                                                                   
                     this.availabeDateTimeSlotsStart = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: 23, minute: 30 });                    
                     //check point timeSlots
                     this.props.timeSlots.some((timeSlot, index) => {
@@ -270,7 +270,7 @@ export class BookingDatesFormComponent extends Component {
                     this.availabeDateTimeSlotsStart = null;
                   }
 
-                  if(endBool){                                        
+                  if(invalidEnd){                                        
                     this.availabeDateTimeSlotsEnd = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: 23, minute: 30 });                    
                     //check point timeSlots
                     this.props.timeSlots.some((timeSlot, index) => {
@@ -315,15 +315,13 @@ export class BookingDatesFormComponent extends Component {
                         return true;
                       }
                     });
-
-                    
                   } else{
                     this.availabeDateTimeSlotsEnd = null;
                   }
 
                   let breakPoint = true;
                   const newTimeSlots = this.props.timeSlots ? createNewTimeSlots(this.props.timeSlots) : null;                                    
-                  if(startBool && endBool && newTimeSlots ){
+                  if(invalidStart && invalidEnd && newTimeSlots ){
                     const arrayDate = createRangeDay(startDate.date, endDate.date);                                        
                     //algorithm complexity n
                     const iStart = newTimeSlots.findIndex( value =>{
@@ -338,16 +336,12 @@ export class BookingDatesFormComponent extends Component {
                       breakPoint = false;
                       this.setState({
                         timeRangeError: 'An invalid period of time'
-                      });                      
-                      form.change("startDate", null);
-                      form.change("endDate", null);    
-                      form.change("hourStart", null);                  
-                      form.change("hourEnd", null);
+                      });                                            
                     }
                   }
 
                   //check the sameday, timeEnd< timeStart
-                  if(startBool && endBool && hourStart && hourEnd && breakPoint){                    
+                  if(invalidStart && invalidEnd && hourStart && hourEnd && breakPoint){                    
                     const timeStart = hourStart.split(":");
                     const timeEnd = hourEnd.split(":");
                                       
@@ -355,8 +349,7 @@ export class BookingDatesFormComponent extends Component {
                       if((timeStart[0] > timeEnd[0] || ( timeStart[0] === timeEnd[0] && timeStart[1] >= timeEnd[1]))){
                         this.setState({
                           timeRangeError: 'Invalid duration time (Equal/longer than 1 hour)'
-                        });
-                        form.change("hourEnd", null);                      
+                        });                        
                       }else{                        
                         this.setState({
                           timeRangeError: null

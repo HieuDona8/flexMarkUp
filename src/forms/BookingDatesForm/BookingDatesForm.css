@@ -17,9 +17,8 @@
   flex-direction: column;
 }
 
-.priceBreakdownContainer {
-  padding: 0 24px;
-  margin-bottom: 40px;
+.priceBreakdownContainer {  
+  
 
   @media (--viewportMedium) {
     padding: 0;
@@ -117,6 +116,11 @@
 .specialBook{
   position: relative;
   z-index: 2;
+
+  @media (--viewportXLarge) {
+    position: relative;
+    z-index: 2;
+  }
 }
 
 .subError{

@@ -31,7 +31,6 @@
     /* Similar problem as in issue: https://github.com/airbnb/react-dates/issues/947 */
     top: 36px !important;
     width: 100%;
-    min-height: calc(100vh - var(--DateInput_top));
     background-color: var(--marketplaceColor);
 
     @media (--viewportMedium) {

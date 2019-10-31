@@ -116,3 +116,19 @@
     margin-bottom: 22px;
   }
 }
+
+.bookingPeriod{
+  width: 100%;
+}
+
+.bookingPeriodSection{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.lineItemTotal{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
