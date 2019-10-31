@@ -65,8 +65,8 @@ const estimatedTransaction = (unitType, bookingStart, bookingEnd, unitPrice, qua
   const unitCount = isNightly
     ? nightsBetween(bookingStart, bookingEnd)
     : isDaily
-    ? daysBetween(bookingStart, bookingEnd)
-    : quantity;
+      ? daysBetween(bookingStart, bookingEnd)
+      : quantity;
 
   //count day or night or time
   //minutesBetween
@@ -142,7 +142,7 @@ const EstimatedBreakdownMaybe = props => {
   }
 
   const tx = estimatedTransaction(unitType, startDate.date, endDate.date, unitPrice, quantity, isFirstBooking, numberPerson);
-  console.log("tx: ", tx)
+  
   return (
     <BookingBreakdown
       className={css.receipt}

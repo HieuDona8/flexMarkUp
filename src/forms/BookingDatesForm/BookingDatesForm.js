@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import { string, bool, arrayOf } from 'prop-types';
 import { compose } from 'redux';
-import { Form as FinalForm } from 'react-final-form';
+import { Form as FinalForm, FormSpy } from 'react-final-form';
 import { 
   required, 
   bookingDatesRequired, 
   composeValidators, 
-  bookingDateRequired,
+  bookingDateCheck,
   bookingPerson,
+  bookingPersonBig,
 } from '../../util/validators';
 import { createTimeSlots } from '../../util/test-data';
 
@@ -31,24 +32,25 @@ import {
   FieldTextInput 
 } from '../../components';
 import EstimatedBreakdownMaybe from './EstimatedBreakdownMaybe';
+import { createRangeDay, createNewTimeSlots ,isSameDay, generateHourOptions } from './BookingDates.help';
 
 
 import css from './BookingDatesForm.css';
 
 const identity = v => v;
 
-const createAvailableTimeSlots = dayCount => {
-  const slots = createTimeSlots(new Date(), dayCount);
-  return slots;
-};
-
 export class BookingDatesFormComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { focusedInput: null };
+    this.state = { 
+      focusedInput: null,
+      timeRangeError: null,
+    };
     this.handleFormSubmit = this.handleFormSubmit.bind(this);
     this.onFocusedInputChange = this.onFocusedInputChange.bind(this);
 
+    this.availabeDateTimeSlotsStart = null;
+    this.availabeDateTimeSlotsEnd = null;
     this.startValue = null;
   }
 
@@ -94,9 +96,10 @@ export class BookingDatesFormComponent extends Component {
   }
 
   render() {
-    const { rootClassName, className, price: unitPrice, isFirstBooking, ...rest } = this.props;
+    const { rootClassName, className, price: unitPrice, isFirstBooking,timeSlots, ...rest } = this.props;
     const classes = classNames(rootClassName || css.root, className);
-
+    
+    const newTimeSlots = timeSlots ? createNewTimeSlots(timeSlots) : null;
     if (!unitPrice) {
       return (
         <div className={classes}>
@@ -131,105 +134,13 @@ export class BookingDatesFormComponent extends Component {
             unitType,
             values,            
             fetchTimeSlotsError,
-            timeSlots,
             form
           } = fieldRenderProps;
-          const { startDate, endDate, hourStart, hourEnd, numberPerson } = values && values.startDate && values.hourStart && values.hourEnd ? values : {};
-                            
-          // EDIT DATE
-          //INPUT startDate FIRST (don't have endDate)
-          if(values.startDate && moment(values.startDate.date,"MM DD YYYY h:mm:ss", true).isValid() && !values.endDate){                  
-            form.change("endDate", { date: new Date(moment(values.startDate.date).add(1, "days")) });
-            this.startValue = moment(values.startDate.date).diff(moment(), "days");                        
-          }
 
-          //INPUT endDay FIRST
-          if (!values.startDate && values.endDate && moment(values.endDate.date,"MM DD YYYY h:mm:ss", true).isValid()) {
-            //nếu endDay <= curent => reset startDay và endDay else startDay < endDay 1 ngày
-            if (moment(values.endDate.date).diff(moment(), "days") <= 0) {
-              form.change("startDate", { date: new Date(moment()) });
-              form.change("endDate", { date: new Date(moment().add(1, "days")) });      
-              //this.startValue = moment(values.startDate.date).diff(moment(), "days")
-              //values.endDate is still curent day:
-              this.startValue = moment(values.endDate.date).diff(moment(), "days");              
-            } else {
-              //subtract 1 day form endDate to startDay
-              form.change("startDate", { date: new Date(moment(values.endDate.date).subtract(1, "days")) });
-              this.startValue = moment(values.endDate.date).subtract(1, "days").diff(moment(), "days");                           
-            }
-          }
+          const { startDate, endDate, hourStart, hourEnd, numberPerson } = values && values.startDate && values.hourStart && values.hourEnd ? values : {};                                      
 
-          //NOT update HAVE startDate, endDate AND start - end =>0; = 0 BECAUSE booking by time
-          if (values.startDate && values.endDate && moment(values.startDate.date).diff(moment(values.endDate.date), "days") > 0) {
-            const myStarCur = moment(values.startDate.date).diff(moment(), "days");
-            //end sub => update start
-            if(myStarCur === this.startValue){
-              form.change("startDate", { date: new Date(moment(values.endDate.date)) });
-              this.startValue = moment(values.startDate.date).diff(moment(), "days");              
-            } else{
-              //start plus => update end
-              form.change("endDate", { date: new Date(moment(values.startDate.date).add(1, "days")) });
-              this.startValue = moment(values.startDate.date).diff(moment(), "days");              
-            }
-          }
-
-
-          //EIDT TIME
-          const hourStartPlaceholder = intl.formatMessage({ id: 'BookingDatesForm.hourStartPlaceholder' });
-          const HOUR_FORMAT = 'hh:mm a';         
-
-          const generateHourOptions = (date, startTime, endTime) => {
-            let options = [];
-            for(let i = startTime.hour; i <= endTime.hour; i++) {
-              // e.g. 00:30 ... 22:30.
-              const getHour = i >= 10 ? i : `0${i}`;
-              const halfHour24 = `${getHour}:30`;
-              //the same code to do: const halfHour24 = `${i >= 10 ? i : `0${i}`}:30`;
-              const halfHourHuman = date
-                .clone()
-                .add(i, 'hours')
-                .add(30, 'minutes')
-                .format(HOUR_FORMAT);
-
-              const optionHalfHour = (
-                <option key={halfHour24} value={halfHour24}>
-                  {halfHourHuman}
-                </option>
-              );
-
-              // 00:00 ... 24:00. 24:00 will be converted to the next day 00:00.
-              const getSharpHour = i >= 10 ? i : `0${i}`;
-              const sharpHour24 = `${getSharpHour}:00`; 
-
-              //const sharpHour24 = `${i >= 10 ? i : `0${i}`}:00`;
-              const sharpHourHuman = date.clone().add(i, 'hours').format(HOUR_FORMAT);
-            
-              const optionSharpHour = (
-                <option key={sharpHour24} value={sharpHour24}>
-                  {sharpHourHuman}
-                </option>
-              );
-
-              const startsOnHalfHour = i === startTime.hour && startTime.minute === 30;
-              const endsOnSharpHour = i === endTime.hour && endTime.minute === 0;
-
-              // Define order in the option array
-              if (startsOnHalfHour) {
-                // e.g. ['00:30']
-                options.push(optionHalfHour);
-              } else if (endsOnSharpHour) {
-                // e.g. ['21:00']
-                options.push(optionSharpHour);
-              } else {
-                // e.g. ['01:00', '01:30']
-                options.push(optionSharpHour);
-                options.push(optionHalfHour);
-              }
-            }
-            return options;
-          };
-          
           //config lable
+          const hourStartPlaceholder = intl.formatMessage({ id: 'BookingDatesForm.hourStartPlaceholder' });
           const bookingStartLabel = intl.formatMessage({ id: 'BookingDatesForm.bookingStartTitle' });
           const bookingEndLabel = intl.formatMessage({ id: 'BookingDatesForm.bookingEndTitle' });
           const bookingTimeStartLabel = intl.formatMessage({ id: 'BookingDatesForm.bookingTimeStartTitle' });
@@ -244,22 +155,7 @@ export class BookingDatesFormComponent extends Component {
 
           // This is the place to collect breakdown estimation data. See the
           // EstimatedBreakdownMaybe component to change the calculations
-          // for customized payment processes.
-
-          //the same day but time
-          if(startDate && endDate && hourStart && hourEnd){
-            const timeStart = hourStart.split(":");
-            const timeEnd = hourEnd.split(":");
-            if(moment(startDate.date).diff(moment(endDate.date), "days") === 0 &&
-              (timeStart[0] > timeEnd[0] || ( timeStart[0] === timeEnd[0] && 
-              timeStart[1] > timeEnd[1])))
-            {
-              const timeStart = hourStart.split(":");
-              const hour = (parseInt(timeStart[0])+1).toString();
-              const hourValue = hour.length === 2 ? hour +":"+ timeStart[1] : "0" + hour + ":" + timeStart[1];
-              form.change("hourEnd", hourValue);
-            }
-          }
+          // for customized payment processes.          
 
           //move time to date
           if( startDate && endDate && hourStart && hourEnd &&
@@ -314,10 +210,162 @@ export class BookingDatesFormComponent extends Component {
           );
 
           const classDate = classNames(css.dateBook, css.specialBook);
-
+          
           return (
-            <Form onSubmit={handleSubmit} className={classes}>
-              {timeSlotsError}
+            <Form onSubmit={handleSubmit} className={classes} >
+              {timeSlotsError}                           
+              <FormSpy 
+                onChange={formState => {                     
+                  const { startDate, endDate, hourStart, hourEnd } = formState.values;                  
+                  const startBool = startDate && startDate.date;
+                  const endBool = endDate && endDate.date;
+                  //take selectTime
+                  if (startBool) {                                                
+                    if(isSameDay(new Date(), startDate.date)){
+                      const curentDady = new Date();
+                      const hour = curentDady.getMinutes() > 30 ? curentDady.getHours() + 1 : curentDady.getHours();
+                      const minute = curentDady.getMinutes() > 30 ? 0 : 30;                                            
+                      this.availabeDateTimeSlotsStart = generateHourOptions(moment().startOf('day'), { hour: hour, minute: minute }, { hour: 23, minute: 30 });
+                    }
+                    else{
+                      this.availabeDateTimeSlotsStart = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: 23, minute: 30 });
+                    }
+
+                    //check point timeSlots
+                    this.props.timeSlots.some((timeSlot, index) => {
+                      const curentStartDay = timeSlot.attributes.start;
+                      const curentEndDay = timeSlot.attributes.end;
+
+                      const nextTimeSlot = (index +1) < this.props.timeSlots.length ? this.props.timeSlots[index+1] : null;
+                      const nextStartDay = nextTimeSlot ? nextTimeSlot.attributes.start : null;
+                      if(moment(nextStartDay).isSame(startDate.date, 'day') && moment(curentEndDay).isSame(startDate.date, 'day')){
+                        const hourStart = nextStartDay.getHours();
+                        const minuteStart = nextStartDay.getMinutes();
+                        const hourEnd = curentEndDay.getHours();
+                        const minuteEnd = curentEndDay.getMinutes();    
+                        const arrayEnd = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: hourEnd, minute: minuteEnd });
+                        const arrayStart = generateHourOptions(moment().startOf('day'), { hour: hourStart, minute: minuteStart }, { hour: 23, minute: 30 });
+                        this.availabeDateTimeSlotsStart = arrayEnd.concat(arrayStart);                        
+                        return true;
+                      }
+
+                      if(moment(curentStartDay).isSame(startDate.date, 'day')){
+                        const hour = curentStartDay.getHours();
+                        const minute = curentStartDay.getMinutes();                                            
+                        this.availabeDateTimeSlotsStart = generateHourOptions(moment().startOf('day'), { hour: hour, minute: minute }, { hour: 23, minute: 30 });                        
+                        return true;
+                      }
+                      
+                      if(moment(curentEndDay).isSame(startDate.date, 'day')){
+                        const hour = curentEndDay.getHours();
+                        const minute = curentEndDay.getMinutes();                                            
+                        this.availabeDateTimeSlotsStart = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: hour, minute: minute });
+                        return true;
+                      }
+                    });
+                  } else{
+                    this.availabeDateTimeSlotsStart = null;
+                  }
+
+                  if(endBool){                    
+                    if(isSameDay(new Date(), endDate.date)){
+                      const curentDady = new Date();
+                      const hour = curentDady.getMinutes() > 30 ? curentDady.getHours() + 1 : curentDady.getHours();
+                      const minute = curentDady.getMinutes() > 30 ? 0 : 30;                                            
+                      this.availabeDateTimeSlotsEnd = generateHourOptions(moment().startOf('day'), { hour: hour, minute: minute }, { hour: 23, minute: 30 });
+                    }
+                    else{
+                      this.availabeDateTimeSlotsEnd = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: 23, minute: 30 });
+                    }
+
+                    //check point timeSlots
+                    this.props.timeSlots.some((timeSlot, index) => {
+                      const curentStartDay = timeSlot.attributes.start;
+                      const curentEndDay = timeSlot.attributes.end;
+
+                      const nextTimeSlot = (index +1) < this.props.timeSlots.length ? this.props.timeSlots[index+1] : null;
+                      const nextStartDay = nextTimeSlot ? nextTimeSlot.attributes.start : null;
+                      if(moment(nextStartDay).isSame(endDate.date, 'day') && moment(curentEndDay).isSame(endDate.date, 'day')){
+                        const hourStart = nextStartDay.getHours();
+                        const minuteStart = nextStartDay.getMinutes();
+                        const hourEnd = curentEndDay.getHours();
+                        const minuteEnd = curentEndDay.getMinutes();    
+                        const arrayEnd = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: hourEnd, minute: minuteEnd });
+                        const arrayStart = generateHourOptions(moment().startOf('day'), { hour: hourStart, minute: minuteStart }, { hour: 23, minute: 30 });
+                        this.availabeDateTimeSlotsEnd = arrayEnd.concat(arrayStart);                        
+                        return true;
+                      }
+
+                      if(moment(curentStartDay).isSame(endDate.date, 'day')){
+                        const hour = curentStartDay.getHours();
+                        const minute = curentStartDay.getMinutes();                                            
+                        this.availabeDateTimeSlotsEnd = generateHourOptions(moment().startOf('day'), { hour: hour, minute: minute }, { hour: 23, minute: 30 });                        
+                        return true;
+                      }
+                      
+                      if(moment(curentEndDay).isSame(endDate.date, 'day')){
+                        const hour = curentEndDay.getHours();
+                        const minute = curentEndDay.getMinutes();                                            
+                        this.availabeDateTimeSlotsEnd = generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: hour, minute: minute });                        
+                        return true;
+                      }
+                    });
+
+                    
+                  } else{
+                    this.availabeDateTimeSlotsEnd = null;
+                  }
+
+                  let breakPoint = true;
+                  const newTimeSlots = this.props.timeSlots ? createNewTimeSlots(this.props.timeSlots) : null;                                    
+                  if(startBool && endBool && newTimeSlots ){
+                    const arrayDate = createRangeDay(startDate.date, endDate.date);                                        
+                    //algorithm complexity n
+                    const iStart = newTimeSlots.findIndex( value =>{
+                      const timeSlotDay = value.attributes.start;
+                      return isSameDay(arrayDate[0], timeSlotDay);                      
+                    });
+                    const iEnd = newTimeSlots.findIndex( value =>{
+                      const timeSlotDay = value.attributes.start;
+                      return isSameDay(arrayDate[arrayDate.length-1], timeSlotDay);                      
+                    });
+                    if((iEnd-iStart+1) !== arrayDate.length){
+                      breakPoint = false;
+                      this.setState({
+                        timeRangeError: 'An invalid period of time'
+                      });                      
+                      form.change("startDate", null);
+                      form.change("endDate", null);    
+                      form.change("hourStart", null);                  
+                      form.change("hourEnd", null);
+                    }
+                  }
+
+                  //check the sameday, timeEnd< timeStart
+                  if(startBool && endBool && hourStart && hourEnd && breakPoint){                    
+                    const timeStart = hourStart.split(":");
+                    const timeEnd = hourEnd.split(":");
+                                      
+                    if(moment(startDate.date).isSame(endDate.date, 'day')){
+                      if((timeStart[0] > timeEnd[0] || ( timeStart[0] === timeEnd[0] && timeStart[1] > timeEnd[1]))){
+                        this.setState({
+                          timeRangeError: 'Invalid duration time (Equal/longer than 1 hour)'
+                        });
+                        form.change("hourEnd", null);                      
+                      }
+                      
+                      //extension code for time                     
+                      
+                    }else{
+                      this.setState({
+                        timeRangeError: null
+                      });
+                    }
+                  }
+
+                }}
+              />
+    
               <div className={css.timeContainer}>
                 <div className={css.timeItem}>
                   <FieldDateInput
@@ -329,9 +377,8 @@ export class BookingDatesFormComponent extends Component {
                     label={bookingStartLabel}
                     placeholderText={moment().format('DD/MM/YYYY')}     
                     format={identity}
-                    validate= {composeValidators(required('Required'), bookingDateRequired('Date is not valid'))}       
-                    //timeSlots={createAvailableTimeSlots(90)}
-                    timeSlots={timeSlots}
+                    validate= {composeValidators(required('Required'), bookingDateCheck('Date is not valid'))}                           
+                    timeSlots={newTimeSlots}
                   />
                   <FieldSelect
                     className={css.hourBook}                    
@@ -346,7 +393,9 @@ export class BookingDatesFormComponent extends Component {
                     <option value="" disabled>
                       {hourStartPlaceholder}
                     </option>
-                    {generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: 23, minute: 30 })}
+                    {                       
+                      this.availabeDateTimeSlotsStart ? this.availabeDateTimeSlotsStart.map(time => time) : ""
+                    }
                   </FieldSelect>                              
                 </div>
                 <div className={css.timeItem}>                  
@@ -359,9 +408,8 @@ export class BookingDatesFormComponent extends Component {
                     label={bookingEndLabel}
                     placeholderText={moment().add(1, "day").format('DD/MM/YYYY')}
                     format={identity}
-                    validate= {composeValidators(required('Required'), bookingDateRequired('Date is not valid'))}
-                    //timeSlots={createAvailableTimeSlots(90)}
-                    timeSlots={timeSlots}
+                    validate= {composeValidators(required('Required'), bookingDateCheck('Date is not valid'))}
+                    timeSlots={newTimeSlots}
                   />                                   
                   <FieldSelect
                     className={css.hourBook} 
@@ -376,7 +424,7 @@ export class BookingDatesFormComponent extends Component {
                     <option value="" disabled>
                       {hourStartPlaceholder}
                     </option>
-                    {generateHourOptions(moment().startOf('day'), { hour: 0, minute: 0 }, { hour: 23, minute: 30 })}
+                    {this.availabeDateTimeSlotsEnd ? this.availabeDateTimeSlotsEnd.map(time => time) : ""}
                   </FieldSelect>                                           
                 </div>
                 <div className={css.numberPerson}>
@@ -384,14 +432,16 @@ export class BookingDatesFormComponent extends Component {
                     className={css.numberPersonContent}
                     id={"numberPerson"}
                     label={bookingNumberPerson}
-                    name="numberPerson"                    
-                    type="number"                    
-                    placeholder="0"                    
-                    validate={composeValidators(required("This field is required or not valid"),bookingPerson("Person is not valid"))}                    
+                    name="numberPerson"
+                    type="number"
+                    placeholder="0"
+                    validate={composeValidators(required("Required"),bookingPerson("Person is not valid"),bookingPersonBig('Less than or equal to 10'))}                    
                   />
                 </div>
               </div>
-
+              <div className={css.subError}>
+                {this.state.timeRangeError}
+              </div>
               {bookingInfo}
               <p className={css.smallPrint}>
                 <FormattedMessage

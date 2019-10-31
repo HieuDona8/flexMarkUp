@@ -12,12 +12,14 @@ const LineItemProviderCommissionRefundMaybe = props => {
     item => item.code === LINE_ITEM_PROVIDER_COMMISSION && item.reversal
   );
 
+  const refundMoney = refund ? ('-'+formatMoney(intl, refund.lineTotal)): null;
+
   return isProvider && refund ? (
     <div className={css.lineItem}>
       <span className={css.itemLabel}>
         <FormattedMessage id="BookingBreakdown.refundProviderFee" />
       </span>
-      <span className={css.itemValue}>{formatMoney(intl, refund.lineTotal)}</span>
+      <span className={css.itemValue}>{refundMoney}</span>
     </div>
   ) : null;
 };

@@ -175,28 +175,12 @@ class DateInputComponent extends Component {
 
     //const date = new Intl.DateTimeFormat('en-GB').format(dateFormat);    
     
-    const createTimeSlots = timeSlots => { 
-      const arrTimeSlot = [];
-      timeSlots.forEach((timeSlot, index) => {        
-        const curentStartDay = timeSlot.attributes.start;
-        const curentEndDay = timeSlot.attributes.end;        
-        const timeDiff = moment(curentEndDay).diff(moment(curentStartDay),"days");
-        for(let i = 0 ;i< timeDiff; i++){
-          const start = new Date(moment(curentStartDay).add(i, "days"));
-          const end = new Date(moment(curentStartDay).add(i, "days"));
-          const attributes = { start, end, seats: 2, type: "time-slot/time" }
-          const result = { attributes, id: "myid", type: "timeSlot" }
-          arrTimeSlot.push(result);
-        }                        
-      });   
-      return arrTimeSlot;   
-    };
-
-    const newTimeSlots = timeSlots ? createTimeSlots(timeSlots) : null;
+    
+    
 
     
-    const isDayBlocked = newTimeSlots
-      ? day => !newTimeSlots.find(timeSlot => timeSlotEqualsDay(timeSlot, day))
+    const isDayBlocked = timeSlots
+      ? day => !timeSlots.find(timeSlot => timeSlotEqualsDay(timeSlot, day))
       : () => false;
 
     const placeholder = placeholderText || intl.formatMessage({ id: 'FieldDateInput.placeholder' });

@@ -38,7 +38,7 @@ const LineItemCustomerCommissionMaybe = props => {
 
     const commission = customerCommissionLineItem.lineTotal;
     const formattedCommission = commission ? formatMoney(intl, commission) : null;
-
+    
     commissionItem = (
       <div className={css.lineItem}>
         <span className={css.itemLabel}>

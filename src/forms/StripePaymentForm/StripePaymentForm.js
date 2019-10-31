@@ -306,6 +306,7 @@ class StripePaymentForm extends Component {
         ensurePaymentMethodCard(defaultPaymentMethod).id
       ),
     };
+    
     onSubmit(params);
   }
 
@@ -353,10 +354,10 @@ class StripePaymentForm extends Component {
       handleCardPaymentError && handleCardPaymentError.code === piAuthenticationFailure
         ? intl.formatMessage({ id: 'StripePaymentForm.handleCardPaymentError' })
         : handleCardPaymentError
-        ? handleCardPaymentError.message
-        : confirmPaymentError
-        ? intl.formatMessage({ id: 'StripePaymentForm.confirmPaymentError' })
-        : intl.formatMessage({ id: 'StripePaymentForm.genericError' });
+          ? handleCardPaymentError.message
+          : confirmPaymentError
+            ? intl.formatMessage({ id: 'StripePaymentForm.confirmPaymentError' })
+            : intl.formatMessage({ id: 'StripePaymentForm.genericError' });
 
     const billingDetailsNameLabel = intl.formatMessage({
       id: 'StripePaymentForm.billingDetailsNameLabel',
