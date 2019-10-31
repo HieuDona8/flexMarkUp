@@ -48,7 +48,7 @@ export const createNewTimeSlots = timeSlots => {
 
     if((curentEndDay.getHours()+curentEndDay.getMinutes())===0){
       for(let i = 0 ;i < timeDiff; i++){
-        const start = new Date(moment(curentStartDay).add(i, "days"));
+        const start = new Date(moment(curentStartDay).startOf('day').add(i, "days"));
         const end = new Date(moment(curentStartDay).add(i, "days"));
         const attributes = { start, end, seats: 1, type: "time-slot/time" };
         const result = { attributes, id: "myid", type: "timeSlot" };
@@ -56,7 +56,7 @@ export const createNewTimeSlots = timeSlots => {
       }
     }else{
       for(let i = 0 ;i <= timeDiff; i++){
-        const start = new Date(moment(curentStartDay).add(i, "days"));
+        const start = new Date(moment(curentStartDay).startOf('day').add(i, "days"));
         const end = new Date(moment(curentStartDay).add(i, "days"));
         const attributes = { start, end, seats: 1, type: "time-slot/time" };
         const result = { attributes, id: "myid", type: "timeSlot" };

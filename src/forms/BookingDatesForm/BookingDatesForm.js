@@ -352,6 +352,10 @@ export class BookingDatesFormComponent extends Component {
                           timeRangeError: 'Invalid duration time (Equal/longer than 1 hour)'
                         });
                         form.change("hourEnd", null);                      
+                      }else{                        
+                        this.setState({
+                          timeRangeError: null
+                        });
                       }
                       
                       //extension code for time                     
