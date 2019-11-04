@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { array, bool, func, number, oneOf, object, shape, string } from 'prop-types';
 import { injectIntl, intlShape } from '../../util/reactIntl';
 import { connect } from 'react-redux';
@@ -34,32 +34,16 @@ const RESULT_PAGE_SIZE = 24;
 const MODAL_BREAKPOINT = 768; // Search is in modal on mobile layout
 const SEARCH_WITH_MAP_DEBOUNCE = 300; // Little bit of debounce before search is initiated.
 
-export class SearchPageComponent extends Component {
-  constructor(props) {
-    super(props);
+const SearchPageComponent = props => {
+  const [isSearchMapOpenOnMobile, setIsSearchMapOpenOnMobile] = useState(props.tab === 'map');
+  const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
+  const [isOpenMap, setIsOpenMap] = useState(true);  
 
-    this.state = {
-      isSearchMapOpenOnMobile: props.tab === 'map',
-      isMobileModalOpen: false,
-      isOpenMap: true,
-    };
+  const openMap = ()=>{
+    setIsOpenMap(!isOpenMap);
+  };
 
-    this.searchMapListingsInProgress = false;
-
-    this.filters = this.filters.bind(this);
-    this.onMapMoveEnd = debounce(this.onMapMoveEnd.bind(this), SEARCH_WITH_MAP_DEBOUNCE);
-    this.onOpenMobileModal = this.onOpenMobileModal.bind(this);
-    this.onCloseMobileModal = this.onCloseMobileModal.bind(this);
-  }
-
-  openMap(){
-    const stateMap = ! this.state.isOpenMap;
-    this.setState({
-      isOpenMap: stateMap
-    });
-  }
-
-  filters() {
+  const filters= ()=> {
     const {
       categories,
       amenities,
@@ -67,12 +51,7 @@ export class SearchPageComponent extends Component {
       dateRangeFilterConfig,
       keywordFilterConfig,
       capacityOptions,
-    } = this.props;
-
-    // Note: "category" and "amenities" filters are not actually filtering anything by default.
-    // Currently, if you want to use them, we need to manually configure them to be available
-    // for search queries. Read more from extended data document:
-    // https://www.sharetribe.com/docs/references/extended-data/#data-schema
+    } = props;
 
     return {
       capacityFilter: {
@@ -100,11 +79,10 @@ export class SearchPageComponent extends Component {
         config: keywordFilterConfig,
       },
     };
-  }
+  };
 
-  // Callback to determine if new search is needed
-  // when map is moved by user or viewport has changed
-  onMapMoveEnd(viewportBoundsChanged, data) {
+
+  const onMapMoveEnd = debounce( (viewportBoundsChanged, data)=> {
     const { viewportBounds, viewportCenter } = data;
 
     const routes = routeConfiguration();
@@ -120,7 +98,7 @@ export class SearchPageComponent extends Component {
     // we start to react to "mapmoveend" events by generating new searches
     // (i.e. 'moveend' event in Mapbox and 'bounds_changed' in Google Maps)
     if (viewportBoundsChanged && isSearchPage) {
-      const { history, location } = this.props;
+      const { history, location } = props;
 
       // parse query parameters, including a custom attribute named category
       const { address, bounds, mapSearch, ...rest } = parse(location.search, {
@@ -136,154 +114,152 @@ export class SearchPageComponent extends Component {
         ...originMaybe,
         bounds: viewportBounds,
         mapSearch: true,
-        ...validFilterParams(rest, this.filters()),
+        ...validFilterParams(rest,filters()),
       };
 
       history.push(createResourceLocatorString('SearchPage', routes, {}, searchParams));
     }
-  }
+  }, SEARCH_WITH_MAP_DEBOUNCE);
 
   // Invoked when a modal is opened from a child component,
   // for example when a filter modal is opened in mobile view
-  onOpenMobileModal() {
-    this.setState({ isMobileModalOpen: true });
+  function onOpenMobileModal() {
+    setIsMobileModalOpen(true);
   }
 
   // Invoked when a modal is closed from a child component,
   // for example when a filter modal is opened in mobile view
-  onCloseMobileModal() {
-    this.setState({ isMobileModalOpen: false });
+  function onCloseMobileModal() {
+    setIsMobileModalOpen(false);    
   }
 
-  render() {
-    const {
-      intl,
-      listings,
-      location,
-      mapListings,
-      onManageDisableScrolling,
-      pagination,
-      scrollingDisabled,
-      searchInProgress,
-      searchListingsError,
-      searchParams,
-      activeListingId,
-      onActivateListing,
-    } = this.props;
-    // eslint-disable-next-line no-unused-vars
-    const { mapSearch, page, ...searchInURL } = parse(location.search, {
-      latlng: ['origin'],
-      latlngBounds: ['bounds'],
-    });
+  
+  const {
+    intl,
+    listings,
+    location,
+    mapListings,
+    onManageDisableScrolling,
+    pagination,
+    scrollingDisabled,
+    searchInProgress,
+    searchListingsError,
+    searchParams,
+    activeListingId,
+    onActivateListing,
+  } = props;
+  // eslint-disable-next-line no-unused-vars
+  const { mapSearch, page, ...searchInURL } = parse(location.search, {
+    latlng: ['origin'],
+    latlngBounds: ['bounds'],
+  });
 
-    const filters = this.filters();
+  const getFilters = filters();
 
-    // urlQueryParams doesn't contain page specific url params
-    // like mapSearch, page or origin (origin depends on config.sortSearchByDistance)
-    const urlQueryParams = pickSearchParamsOnly(searchInURL, filters);
+  // urlQueryParams doesn't contain page specific url params
+  // like mapSearch, page or origin (origin depends on config.sortSearchByDistance)
+  const urlQueryParams = pickSearchParamsOnly(searchInURL, getFilters);
 
-    // Page transition might initially use values from previous search
-    const urlQueryString = stringify(urlQueryParams);
-    const paramsQueryString = stringify(pickSearchParamsOnly(searchParams, filters));
-    const searchParamsAreInSync = urlQueryString === paramsQueryString;
+  // Page transition might initially use values from previous search
+  const urlQueryString = stringify(urlQueryParams);
+  const paramsQueryString = stringify(pickSearchParamsOnly(searchParams, getFilters));
+  const searchParamsAreInSync = urlQueryString === paramsQueryString;
 
-    const validQueryParams = validURLParamsForExtendedData(searchInURL, filters);
+  const validQueryParams = validURLParamsForExtendedData(searchInURL, getFilters);
 
-    const isWindowDefined = typeof window !== 'undefined';
-    const isMobileLayout = isWindowDefined && window.innerWidth < MODAL_BREAKPOINT;
-    const shouldShowSearchMap =
-      !isMobileLayout || (isMobileLayout && this.state.isSearchMapOpenOnMobile);
+  const isWindowDefined = typeof window !== 'undefined';
+  const isMobileLayout = isWindowDefined && window.innerWidth < MODAL_BREAKPOINT;
+  const shouldShowSearchMap =
+    !isMobileLayout || (isMobileLayout && isSearchMapOpenOnMobile);
 
-    const onMapIconClick = () => {
-      this.useLocationSearchBounds = true;
-      this.setState({ isSearchMapOpenOnMobile: true });
-    };
+  const onMapIconClick = () => {
+    this.useLocationSearchBounds = true;
+    setIsSearchMapOpenOnMobile(true);
+  };
 
-    const { address, bounds, origin } = searchInURL || {};
-    const { title, description, schema } = createSearchResultSchema(listings, address, intl);
+  const { address, bounds, origin } = searchInURL || {};
+  const { title, description, schema } = createSearchResultSchema(listings, address, intl);
 
-    // Set topbar class based on if a modal is open in
-    // a child component
-    const topbarClasses = this.state.isMobileModalOpen
-      ? classNames(css.topbarBehindModal, css.topbar)
-      : css.topbar;
+  // Set topbar class based on if a modal is open in
+  // a child component
+  const topbarClasses = isMobileModalOpen
+    ? classNames(css.topbarBehindModal, css.topbar)
+    : css.topbar;
 
-    // N.B. openMobileMap button is sticky.
-    // For some reason, stickyness doesn't work on Safari, if the element is <button>
-    /* eslint-disable jsx-a11y/no-static-element-interactions */
-    return (
-      <Page
-        scrollingDisabled={scrollingDisabled}
-        description={description}
-        title={title}
-        schema={schema}
-      >
-        <TopbarContainer
-          className={topbarClasses}
-          currentPage="SearchPage"
-          currentSearchParams={urlQueryParams}
+  // N.B. openMobileMap button is sticky.
+  // For some reason, stickyness doesn't work on Safari, if the element is <button>
+  /* eslint-disable jsx-a11y/no-static-element-interactions */
+  return (
+    <Page
+      scrollingDisabled={scrollingDisabled}
+      description={description}
+      title={title}
+      schema={schema}
+    >
+      <TopbarContainer
+        className={topbarClasses}
+        currentPage="SearchPage"
+        currentSearchParams={urlQueryParams}
+      />
+      <div className={css.container}>
+        <MainPanel
+          stateOpenMap = { isOpenMap }
+          handleShowMap = { openMap}
+          urlQueryParams={validQueryParams}
+          listings={listings}
+          searchInProgress={searchInProgress}
+          searchListingsError={searchListingsError}
+          searchParamsAreInSync={searchParamsAreInSync}
+          onActivateListing={onActivateListing}
+          onManageDisableScrolling={onManageDisableScrolling}
+          onOpenModal={onOpenMobileModal}
+          onCloseModal={onCloseMobileModal}
+          onMapIconClick={onMapIconClick}
+          pagination={pagination}
+          searchParamsForPagination={parse(location.search)}
+          showAsModalMaxWidth={MODAL_BREAKPOINT}
+          primaryFilters={{
+            categoryFilter: getFilters.categoryFilter,
+            amenitiesFilter: getFilters.amenitiesFilter,
+            priceFilter: getFilters.priceFilter,
+            dateRangeFilter: getFilters.dateRangeFilter,
+            keywordFilter: getFilters.keywordFilter,
+            capacityFilter: getFilters.capacityFilter,
+          }}
         />
-        <div className={css.container}>
-          <MainPanel
-            stateOpenMap = { this.state.isOpenMap }
-            handleShowMap = { this.openMap.bind(this)}
-            urlQueryParams={validQueryParams}
-            listings={listings}
-            searchInProgress={searchInProgress}
-            searchListingsError={searchListingsError}
-            searchParamsAreInSync={searchParamsAreInSync}
-            onActivateListing={onActivateListing}
-            onManageDisableScrolling={onManageDisableScrolling}
-            onOpenModal={this.onOpenMobileModal}
-            onCloseModal={this.onCloseMobileModal}
-            onMapIconClick={onMapIconClick}
-            pagination={pagination}
-            searchParamsForPagination={parse(location.search)}
+        {isOpenMap && 
+          <ModalInMobile
+            className={css.mapPanel}
+            id="SearchPage.map"
+            isModalOpenOnMobile={isSearchMapOpenOnMobile}
+            onClose={() => setIsSearchMapOpenOnMobile(false)}
             showAsModalMaxWidth={MODAL_BREAKPOINT}
-            primaryFilters={{
-              categoryFilter: filters.categoryFilter,
-              amenitiesFilter: filters.amenitiesFilter,
-              priceFilter: filters.priceFilter,
-              dateRangeFilter: filters.dateRangeFilter,
-              keywordFilter: filters.keywordFilter,
-              capacityFilter: filters.capacityFilter,
-            }}
-          />
-          {this.state.isOpenMap && 
-            <ModalInMobile
-              className={css.mapPanel}
-              id="SearchPage.map"
-              isModalOpenOnMobile={this.state.isSearchMapOpenOnMobile}
-              onClose={() => this.setState({ isSearchMapOpenOnMobile: false })}
-              showAsModalMaxWidth={MODAL_BREAKPOINT}
-              onManageDisableScrolling={onManageDisableScrolling}
-            >
-              <div className={css.mapWrapper}>
-                {shouldShowSearchMap ? (
-                  <SearchMap
-                    reusableContainerClassName={css.map}
-                    activeListingId={activeListingId}
-                    bounds={bounds}
-                    center={origin}
-                    isSearchMapOpenOnMobile={this.state.isSearchMapOpenOnMobile}
-                    location={location}
-                    listings={mapListings || []}
-                    onMapMoveEnd={this.onMapMoveEnd}
-                    onCloseAsModal={() => {
-                      onManageDisableScrolling('SearchPage.map', false);
-                    }}
-                    messages={intl.messages}
-                  />
-                ) : null}
-              </div>
-            </ModalInMobile>
-          }          
-        </div>
-      </Page>
-    );
-    /* eslint-enable jsx-a11y/no-static-element-interactions */
-  }
-}
+            onManageDisableScrolling={onManageDisableScrolling}
+          >
+            <div className={css.mapWrapper}>
+              {shouldShowSearchMap ? (
+                <SearchMap
+                  reusableContainerClassName={css.map}
+                  activeListingId={activeListingId}
+                  bounds={bounds}
+                  center={origin}
+                  isSearchMapOpenOnMobile={isSearchMapOpenOnMobile}
+                  location={location}
+                  listings={mapListings || []}
+                  onMapMoveEnd={onMapMoveEnd}
+                  onCloseAsModal={() => {
+                    onManageDisableScrolling('SearchPage.map', false);
+                  }}
+                  messages={intl.messages}
+                />
+              ) : null}
+            </div>
+          </ModalInMobile>
+        }          
+      </div>
+    </Page>
+  );
+};
 
 SearchPageComponent.defaultProps = {
   listings: [],
