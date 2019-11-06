@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { array, arrayOf, bool, func, number, string } from 'prop-types';
 import { FormattedMessage, injectIntl, intlShape } from '../../util/reactIntl';
 import classNames from 'classnames';
@@ -85,60 +85,53 @@ const displayNames = (currentUser, currentProvider, currentCustomer, intl) => {
   };
 };
 
-export class TransactionPanelComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      sendMessageFormFocused: false,
-      isReviewModalOpen: false,
-      reviewSubmitted: false,
-    };
-    this.isMobSaf = false;
-    this.sendMessageFormName = 'TransactionPanel.SendMessageForm';
+const TransactionPanelComponent = props => {
+  const [sendMessageFormFocused, setSendMessageFormFocused] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
-    this.onOpenReviewModal = this.onOpenReviewModal.bind(this);
-    this.onSubmitReview = this.onSubmitReview.bind(this);
-    this.onSendMessageFormFocus = this.onSendMessageFormFocus.bind(this);
-    this.onSendMessageFormBlur = this.onSendMessageFormBlur.bind(this);
-    this.onMessageSubmit = this.onMessageSubmit.bind(this);
-    this.scrollToMessage = this.scrollToMessage.bind(this);
-  }
+  let isMobSaf = false;
+  let sendMessageFormName = 'TransactionPanel.SendMessageForm';
 
-  componentDidMount() {
-    this.isMobSaf = isMobileSafari();
-  }
+  useEffect(()=>{
+    isMobSaf = isMobileSafari();
+  },[]);
+  
 
-  onOpenReviewModal() {
-    this.setState({ isReviewModalOpen: true });
-  }
+  const onOpenReviewModal =() =>{
+    setIsReviewModalOpen(true);
+  };
 
-  onSubmitReview(values) {
-    const { onSendReview, transaction, transactionRole } = this.props;
+  const onSubmitReview = values =>{
+    const { onSendReview, transaction, transactionRole } = props;
     const currentTransaction = ensureTransaction(transaction);
     const { reviewRating, reviewContent } = values;
     const rating = Number.parseInt(reviewRating, 10);
     onSendReview(transactionRole, currentTransaction, rating, reviewContent)
-      .then(r => this.setState({ isReviewModalOpen: false, reviewSubmitted: true }))
+      .then(r =>{
+        setIsReviewModalOpen(false);
+        setReviewSubmitted(true);
+      })
       .catch(e => {
         // Do nothing.
       });
-  }
+  };
 
-  onSendMessageFormFocus() {
-    this.setState({ sendMessageFormFocused: true });
-    if (this.isMobSaf) {
+  const onSendMessageFormFocus = () => {
+    setSendMessageFormFocused(true);
+    if (isMobSaf) {
       // Scroll to bottom
       window.scroll({ top: document.body.scrollHeight, left: 0, behavior: 'smooth' });
     }
-  }
+  };
 
-  onSendMessageFormBlur() {
-    this.setState({ sendMessageFormFocused: false });
-  }
+  const onSendMessageFormBlur = () => {
+    setSendMessageFormFocused(false);
+  };
 
-  onMessageSubmit(values, form) {
+  const onMessageSubmit = (values, form) => {
     const message = values.message ? values.message.trim() : null;
-    const { transaction, onSendMessage } = this.props;
+    const { transaction, onSendMessage } = props;
     const ensuredTransaction = ensureTransaction(transaction);
 
     if (!message) {
@@ -147,14 +140,14 @@ export class TransactionPanelComponent extends Component {
     onSendMessage(ensuredTransaction.id, message)
       .then(messageId => {
         form.reset();
-        this.scrollToMessage(messageId);
+        scrollToMessage(messageId);
       })
       .catch(e => {
         // Ignore, Redux handles the error
       });
-  }
+  };
 
-  scrollToMessage(messageId) {
+  const scrollToMessage = messageId => {
     const selector = `#msg-${messageId.uuid}`;
     const el = document.querySelector(selector);
     if (el) {
@@ -163,370 +156,369 @@ export class TransactionPanelComponent extends Component {
         behavior: 'smooth',
       });
     }
-  }
+  };
 
-  render() {
-    const {
-      rootClassName,
-      className,
-      currentUser,
-      transaction,
-      totalMessagePages,
-      oldestMessagePageFetched,
-      messages,
-      initialMessageFailed,
-      savePaymentMethodFailed,
-      fetchMessagesInProgress,
-      fetchMessagesError,
-      sendMessageInProgress,
-      sendMessageError,
-      sendReviewInProgress,
-      sendReviewError,
-      onManageDisableScrolling,
-      onShowMoreMessages,
-      transactionRole,
-      intl,
-      onAcceptSale,
-      onDeclineSale,
-      onCancelSale,
-      acceptInProgress,
-      declineInProgress,
-      cancelInProgress,
-      acceptSaleError,
-      declineSaleError,
-      cancelSaleError,
-      onSubmitBookingRequest,
-      timeSlots,
-      fetchTimeSlotsError,
-      nextTransitions,
-      isFirstBooking,
-    } = this.props;
+  //render
+  const {
+    rootClassName,
+    className,
+    currentUser,
+    transaction,
+    totalMessagePages,
+    oldestMessagePageFetched,
+    messages,
+    initialMessageFailed,
+    savePaymentMethodFailed,
+    fetchMessagesInProgress,
+    fetchMessagesError,
+    sendMessageInProgress,
+    sendMessageError,
+    sendReviewInProgress,
+    sendReviewError,
+    onManageDisableScrolling,
+    onShowMoreMessages,
+    transactionRole,
+    intl,
+    onAcceptSale,
+    onDeclineSale,
+    onCancelSale,
+    acceptInProgress,
+    declineInProgress,
+    cancelInProgress,
+    acceptSaleError,
+    declineSaleError,
+    cancelSaleError,
+    onSubmitBookingRequest,
+    timeSlots,
+    fetchTimeSlotsError,
+    nextTransitions,
+    isFirstBooking,
+  } = props;
 
-    const currentTransaction = ensureTransaction(transaction);
-    const currentListing = ensureListing(currentTransaction.listing);
-    const currentProvider = ensureUser(currentTransaction.provider);
-    const currentCustomer = ensureUser(currentTransaction.customer);
-    const isCustomer = transactionRole === 'customer';
-    const isProvider = transactionRole === 'provider';
+  const currentTransaction = ensureTransaction(transaction);
+  const currentListing = ensureListing(currentTransaction.listing);
+  const currentProvider = ensureUser(currentTransaction.provider);
+  const currentCustomer = ensureUser(currentTransaction.customer);
+  const isCustomer = transactionRole === 'customer';
+  const isProvider = transactionRole === 'provider';
 
-    const listingLoaded = !!currentListing.id;
-    const listingDeleted = listingLoaded && currentListing.attributes.deleted;
-    const iscustomerLoaded = !!currentCustomer.id;
-    const isCustomerBanned = iscustomerLoaded && currentCustomer.attributes.banned;
-    const isCustomerDeleted = iscustomerLoaded && currentCustomer.attributes.deleted;
-    const isProviderLoaded = !!currentProvider.id;
-    const isProviderBanned = isProviderLoaded && currentProvider.attributes.banned;
-    const isProviderDeleted = isProviderLoaded && currentProvider.attributes.deleted;
+  const listingLoaded = !!currentListing.id;
+  const listingDeleted = listingLoaded && currentListing.attributes.deleted;
+  const iscustomerLoaded = !!currentCustomer.id;
+  const isCustomerBanned = iscustomerLoaded && currentCustomer.attributes.banned;
+  const isCustomerDeleted = iscustomerLoaded && currentCustomer.attributes.deleted;
+  const isProviderLoaded = !!currentProvider.id;
+  const isProviderBanned = isProviderLoaded && currentProvider.attributes.banned;
+  const isProviderDeleted = isProviderLoaded && currentProvider.attributes.deleted;
 
-    const stateDataFn = tx => {
-      if (txIsEnquired(tx)) {
-        const transitions = Array.isArray(nextTransitions)
-          ? nextTransitions.map(transition => {
-            return transition.attributes.name;
-          })
-          : [];
-        
-        const typeNextTransition = isFirstBooking ? TRANSITION_ENQUIRY_FIRST_TIME : TRANSITION_ENQUIRY;
-        const hasCorrectNextTransition =
-          transitions.length > 0 && transitions.includes(typeNextTransition);        
-        return {
-          headingState: HEADING_ENQUIRED,
-          showBookingPanel: isCustomer && !isProviderBanned && hasCorrectNextTransition,
-        };
-      } else if (txIsPaymentPending(tx)) {
-        return {
-          headingState: HEADING_PAYMENT_PENDING,
-          showDetailCardHeadings: isCustomer,
-        };
-      } else if (txIsPaymentExpired(tx)) {
-        return {
-          headingState: HEADING_PAYMENT_EXPIRED,
-          showDetailCardHeadings: isCustomer,
-        };
-      } else if (txIsRequested(tx)) {
-        return {
-          headingState: HEADING_REQUESTED,
-          showDetailCardHeadings: isCustomer,
-          showSaleButtons: isProvider && !isCustomerBanned,
-          showDeclineButtons: isCustomer && !isProviderBanned,
-        };
-      } else if (txIsAccepted(tx)) {
-        return {
-          headingState: HEADING_ACCEPTED,
-          showDetailCardHeadings: isCustomer,
-          showAddress: isCustomer,
-          showCancelButtons: isProvider || isCustomer,
-        };
-      } else if (txIsAfter48hour(tx)) {
-        return {
-          headingState: HEADING_AFTER_48_HOUR,
-          showDetailCardHeadings: isCustomer,
-          showAddress: isCustomer,
-          showCancel48Buttons: isProvider || isCustomer,
-        };
-      } else if (txIsDeclined(tx)) {
-        return {
-          headingState: HEADING_DECLINED,
-          showDetailCardHeadings: isCustomer,          
-        };
-      } else if (txIsCanceled(tx)) {
-        return {
-          headingState: HEADING_CANCELED,
-          showDetailCardHeadings: isCustomer,
-        };
-      } else if (txHasBeenDelivered(tx)) {
-        return {
-          headingState: HEADING_DELIVERED,
-          showDetailCardHeadings: isCustomer,
-          showAddress: isCustomer,
-        };
-      } else {
-        return { headingState: 'unknown' };
-      }
-    };
-    const stateData = stateDataFn(currentTransaction);
+  const stateDataFn = tx => {
+    if (txIsEnquired(tx)) {
+      const transitions = Array.isArray(nextTransitions)
+        ? nextTransitions.map(transition => {
+          return transition.attributes.name;
+        })
+        : [];
+      
+      const typeNextTransition = isFirstBooking ? TRANSITION_ENQUIRY_FIRST_TIME : TRANSITION_ENQUIRY;
+      const hasCorrectNextTransition =
+        transitions.length > 0 && transitions.includes(typeNextTransition);        
+      return {
+        headingState: HEADING_ENQUIRED,
+        showBookingPanel: isCustomer && !isProviderBanned && hasCorrectNextTransition,
+      };
+    } else if (txIsPaymentPending(tx)) {
+      return {
+        headingState: HEADING_PAYMENT_PENDING,
+        showDetailCardHeadings: isCustomer,
+      };
+    } else if (txIsPaymentExpired(tx)) {
+      return {
+        headingState: HEADING_PAYMENT_EXPIRED,
+        showDetailCardHeadings: isCustomer,
+      };
+    } else if (txIsRequested(tx)) {
+      return {
+        headingState: HEADING_REQUESTED,
+        showDetailCardHeadings: isCustomer,
+        showSaleButtons: isProvider && !isCustomerBanned,
+        showDeclineButtons: isCustomer && !isProviderBanned,
+      };
+    } else if (txIsAccepted(tx)) {
+      return {
+        headingState: HEADING_ACCEPTED,
+        showDetailCardHeadings: isCustomer,
+        showAddress: isCustomer,
+        showCancelButtons: isProvider || isCustomer,
+      };
+    } else if (txIsAfter48hour(tx)) {
+      return {
+        headingState: HEADING_AFTER_48_HOUR,
+        showDetailCardHeadings: isCustomer,
+        showAddress: isCustomer,
+        showCancel48Buttons: isProvider || isCustomer,
+      };
+    } else if (txIsDeclined(tx)) {
+      return {
+        headingState: HEADING_DECLINED,
+        showDetailCardHeadings: isCustomer,          
+      };
+    } else if (txIsCanceled(tx)) {
+      return {
+        headingState: HEADING_CANCELED,
+        showDetailCardHeadings: isCustomer,
+      };
+    } else if (txHasBeenDelivered(tx)) {
+      return {
+        headingState: HEADING_DELIVERED,
+        showDetailCardHeadings: isCustomer,
+        showAddress: isCustomer,
+      };
+    } else {
+      return { headingState: 'unknown' };
+    }
+  };
+  const stateData = stateDataFn(currentTransaction);
 
-    const deletedListingTitle = intl.formatMessage({
-      id: 'TransactionPanel.deletedListingTitle',
-    });
+  const deletedListingTitle = intl.formatMessage({
+    id: 'TransactionPanel.deletedListingTitle',
+  });
 
-    const {
-      authorDisplayName,
-      customerDisplayName,
-      otherUserDisplayName,
-      otherUserDisplayNameString,
-    } = displayNames(currentUser, currentProvider, currentCustomer, intl);
+  const {
+    authorDisplayName,
+    customerDisplayName,
+    otherUserDisplayName,
+    otherUserDisplayNameString,
+  } = displayNames(currentUser, currentProvider, currentCustomer, intl);
 
-    const { publicData, geolocation } = currentListing.attributes;
-    const location = publicData && publicData.location ? publicData.location : {};
-    const listingTitle = currentListing.attributes.deleted
-      ? deletedListingTitle
-      : currentListing.attributes.title;
+  const { publicData, geolocation } = currentListing.attributes;
+  const location = publicData && publicData.location ? publicData.location : {};
+  const listingTitle = currentListing.attributes.deleted
+    ? deletedListingTitle
+    : currentListing.attributes.title;
 
-    const unitType = config.bookingUnitType;
-    const isNightly = unitType === LINE_ITEM_NIGHT;
-    const isDaily = unitType === LINE_ITEM_DAY;
+  const unitType = config.bookingUnitType;
+  const isNightly = unitType === LINE_ITEM_NIGHT;
+  const isDaily = unitType === LINE_ITEM_DAY;
 
-    const unitTranslationKey = isNightly
-      ? 'TransactionPanel.perNight'
-      : isDaily
-        ? 'TransactionPanel.perDay'
-        : 'TransactionPanel.perUnit';
+  const unitTranslationKey = isNightly
+    ? 'TransactionPanel.perNight'
+    : isDaily
+      ? 'TransactionPanel.perDay'
+      : 'TransactionPanel.perUnit';
 
-    const price = currentListing.attributes.price;
-    const bookingSubTitle = price
-      ? `${formatMoney(intl, price)} ${intl.formatMessage({ id: unitTranslationKey })}`
-      : '';
+  const price = currentListing.attributes.price;
+  const bookingSubTitle = price
+    ? `${formatMoney(intl, price)} ${intl.formatMessage({ id: unitTranslationKey })}`
+    : '';
 
-    const firstImage =
-      currentListing.images && currentListing.images.length > 0 ? currentListing.images[0] : null;
+  const firstImage =
+    currentListing.images && currentListing.images.length > 0 ? currentListing.images[0] : null;
 
-    const saleButtons = (
-      <SaleActionButtonsMaybe
-        showButtons={stateData.showSaleButtons}
-        acceptInProgress={acceptInProgress}
-        declineInProgress={declineInProgress}
-        acceptSaleError={acceptSaleError}
-        declineSaleError={declineSaleError}
-        onAcceptSale={() => onAcceptSale(currentTransaction.id)}
-        onDeclineSale={() => onDeclineSale(currentTransaction.id)}
-      />
-    );
+  const saleButtons = (
+    <SaleActionButtonsMaybe
+      showButtons={stateData.showSaleButtons}
+      acceptInProgress={acceptInProgress}
+      declineInProgress={declineInProgress}
+      acceptSaleError={acceptSaleError}
+      declineSaleError={declineSaleError}
+      onAcceptSale={() => onAcceptSale(currentTransaction.id)}
+      onDeclineSale={() => onDeclineSale(currentTransaction.id)}
+    />
+  );
 
-    const declineButton = (
-      <ActionButtonMayBe
-        showButtons={stateData.showDeclineButtons}
-        stateInProgress = {declineInProgress}
-        stateSaleError={declineSaleError}
-        title = {"Decline"}
-        onActionSale={() => onDeclineSale(currentTransaction.id, isCustomer)}
-      />
-    );
+  const declineButton = (
+    <ActionButtonMayBe
+      showButtons={stateData.showDeclineButtons}
+      stateInProgress = {declineInProgress}
+      stateSaleError={declineSaleError}
+      title = {"Decline"}
+      onActionSale={() => onDeclineSale(currentTransaction.id, isCustomer)}
+    />
+  );
 
-    const cancelButton = (
-      <ActionButtonMayBe
-        showButtons={stateData.showCancelButtons || stateData.showCancel48Buttons}
-        stateInProgress = {cancelInProgress}
-        stateSaleError = {cancelSaleError}
-        title = {"Cancel"}
-        onActionSale = {() => onCancelSale(currentTransaction.id, isCustomer, currentTransaction)}
-      />
-    );
+  const cancelButton = (
+    <ActionButtonMayBe
+      showButtons={stateData.showCancelButtons || stateData.showCancel48Buttons}
+      stateInProgress = {cancelInProgress}
+      stateSaleError = {cancelSaleError}
+      title = {"Cancel"}
+      onActionSale = {() => onCancelSale(currentTransaction.id, isCustomer, currentTransaction)}
+    />
+  );
 
-    const showSendMessageForm =
-      !isCustomerBanned && !isCustomerDeleted && !isProviderBanned && !isProviderDeleted;
+  const showSendMessageForm =
+    !isCustomerBanned && !isCustomerDeleted && !isProviderBanned && !isProviderDeleted;
 
-    const sendMessagePlaceholder = intl.formatMessage(
-      { id: 'TransactionPanel.sendMessagePlaceholder' },
-      { name: otherUserDisplayNameString }
-    );
+  const sendMessagePlaceholder = intl.formatMessage(
+    { id: 'TransactionPanel.sendMessagePlaceholder' },
+    { name: otherUserDisplayNameString }
+  );
 
-    const sendingMessageNotAllowed = intl.formatMessage({
-      id: 'TransactionPanel.sendingMessageNotAllowed',
-    });
+  const sendingMessageNotAllowed = intl.formatMessage({
+    id: 'TransactionPanel.sendingMessageNotAllowed',
+  });
 
-    const paymentMethodsPageLink = (
-      <NamedLink name="PaymentMethodsPage">
-        <FormattedMessage id="TransactionPanel.paymentMethodsPageLink" />
-      </NamedLink>
-    );
+  const paymentMethodsPageLink = (
+    <NamedLink name="PaymentMethodsPage">
+      <FormattedMessage id="TransactionPanel.paymentMethodsPageLink" />
+    </NamedLink>
+  );
 
-    const classes = classNames(rootClassName || css.root, className);
-    
-    return (
-      <div className={classes}>
-        <div className={css.container}>
-          <div className={css.txInfo}>
+  const classes = classNames(rootClassName || css.root, className);
+  
+  return (
+    <div className={classes}>
+      <div className={css.container}>
+        <div className={css.txInfo}>
+          <DetailCardImage
+            rootClassName={css.imageWrapperMobile}
+            avatarWrapperClassName={css.avatarWrapperMobile}
+            listingTitle={listingTitle}
+            image={firstImage}
+            provider={currentProvider}
+            isCustomer={isCustomer}
+          />
+          {isProvider ? (
+            <div className={css.avatarWrapperProviderDesktop}>
+              <AvatarLarge user={currentCustomer} className={css.avatarDesktop} />
+            </div>
+          ) : null}
+
+          <PanelHeading
+            panelHeadingState={stateData.headingState}
+            transactionRole={transactionRole}
+            providerName={authorDisplayName}
+            customerName={customerDisplayName}
+            isCustomerBanned={isCustomerBanned}
+            listingId={currentListing.id && currentListing.id.uuid}
+            listingTitle={listingTitle}
+            listingDeleted={listingDeleted}
+          />
+
+          <div className={css.bookingDetailsMobile}>
+            <AddressLinkMaybe
+              rootClassName={css.addressMobile}
+              location={location}
+              geolocation={geolocation}
+              showAddress={stateData.showAddress}
+            />
+            <BreakdownMaybe transaction={currentTransaction} transactionRole={transactionRole} />
+          </div>
+
+          {savePaymentMethodFailed ? (
+            <p className={css.genericError}>
+              <FormattedMessage
+                id="TransactionPanel.savePaymentMethodFailed"
+                values={{ paymentMethodsPageLink }}
+              />
+            </p>
+          ) : null}
+          <FeedSection
+            rootClassName={css.feedContainer}
+            currentTransaction={currentTransaction}
+            currentUser={currentUser}
+            fetchMessagesError={fetchMessagesError}
+            fetchMessagesInProgress={fetchMessagesInProgress}
+            initialMessageFailed={initialMessageFailed}
+            messages={messages}
+            oldestMessagePageFetched={oldestMessagePageFetched}
+            onOpenReviewModal={onOpenReviewModal}
+            onShowMoreMessages={() => onShowMoreMessages(currentTransaction.id)}
+            totalMessagePages={totalMessagePages}
+          />
+          {showSendMessageForm ? (
+            <SendMessageForm
+              formId={sendMessageFormName}
+              rootClassName={css.sendMessageForm}
+              messagePlaceholder={sendMessagePlaceholder}
+              inProgress={sendMessageInProgress}
+              sendMessageError={sendMessageError}
+              onFocus={onSendMessageFormFocus}
+              onBlur={onSendMessageFormBlur}
+              onSubmit={onMessageSubmit}
+            />
+          ) : (
+            <div className={css.sendingMessageNotAllowed}>{sendingMessageNotAllowed}</div>
+          )}
+
+          {stateData.showSaleButtons ? (
+            <div className={css.mobileActionButtons}>{saleButtons}</div>
+          ) : null}
+        </div>
+
+        <div className={css.asideDesktop}>
+          <div className={css.detailCard}>
             <DetailCardImage
-              rootClassName={css.imageWrapperMobile}
-              avatarWrapperClassName={css.avatarWrapperMobile}
+              avatarWrapperClassName={css.avatarWrapperDesktop}
               listingTitle={listingTitle}
               image={firstImage}
               provider={currentProvider}
               isCustomer={isCustomer}
             />
-            {isProvider ? (
-              <div className={css.avatarWrapperProviderDesktop}>
-                <AvatarLarge user={currentCustomer} className={css.avatarDesktop} />
+
+            <DetailCardHeadingsMaybe
+              showDetailCardHeadings={stateData.showDetailCardHeadings}
+              listingTitle={listingTitle}
+              subTitle={bookingSubTitle}
+              location={location}
+              geolocation={geolocation}
+              showAddress={stateData.showAddress}
+            />
+            {stateData.showBookingPanel ? (
+              <BookingPanel
+                className={css.bookingPanel}
+                titleClassName={css.bookingTitle}
+                isOwnListing={false}
+                listing={currentListing}
+                title={listingTitle}
+                subTitle={bookingSubTitle}
+                authorDisplayName={authorDisplayName}
+                onSubmit={onSubmitBookingRequest}
+                onManageDisableScrolling={onManageDisableScrolling}
+                timeSlots={timeSlots}
+                fetchTimeSlotsError={fetchTimeSlotsError}
+              />
+            ) : null}
+            <BreakdownMaybe
+              className={css.breakdownContainer}
+              transaction={currentTransaction}
+              transactionRole={transactionRole}
+            />
+            {stateData.showSaleButtons ? (
+              <div className={css.desktopActionButtons}>{saleButtons}</div>
+            ) : null}
+            {stateData.showCancelButtons ?(
+              <div>
+                <div className={css.desktopActionButtons}>{cancelButton}</div>
               </div>
             ) : null}
-
-            <PanelHeading
-              panelHeadingState={stateData.headingState}
-              transactionRole={transactionRole}
-              providerName={authorDisplayName}
-              customerName={customerDisplayName}
-              isCustomerBanned={isCustomerBanned}
-              listingId={currentListing.id && currentListing.id.uuid}
-              listingTitle={listingTitle}
-              listingDeleted={listingDeleted}
-            />
-
-            <div className={css.bookingDetailsMobile}>
-              <AddressLinkMaybe
-                rootClassName={css.addressMobile}
-                location={location}
-                geolocation={geolocation}
-                showAddress={stateData.showAddress}
-              />
-              <BreakdownMaybe transaction={currentTransaction} transactionRole={transactionRole} />
-            </div>
-
-            {savePaymentMethodFailed ? (
-              <p className={css.genericError}>
-                <FormattedMessage
-                  id="TransactionPanel.savePaymentMethodFailed"
-                  values={{ paymentMethodsPageLink }}
-                />
-              </p>
+            {stateData.showDeclineButtons ?(
+              <div>
+                <div className={css.desktopActionButtons}>{declineButton}</div>
+              </div>
             ) : null}
-            <FeedSection
-              rootClassName={css.feedContainer}
-              currentTransaction={currentTransaction}
-              currentUser={currentUser}
-              fetchMessagesError={fetchMessagesError}
-              fetchMessagesInProgress={fetchMessagesInProgress}
-              initialMessageFailed={initialMessageFailed}
-              messages={messages}
-              oldestMessagePageFetched={oldestMessagePageFetched}
-              onOpenReviewModal={this.onOpenReviewModal}
-              onShowMoreMessages={() => onShowMoreMessages(currentTransaction.id)}
-              totalMessagePages={totalMessagePages}
-            />
-            {showSendMessageForm ? (
-              <SendMessageForm
-                formId={this.sendMessageFormName}
-                rootClassName={css.sendMessageForm}
-                messagePlaceholder={sendMessagePlaceholder}
-                inProgress={sendMessageInProgress}
-                sendMessageError={sendMessageError}
-                onFocus={this.onSendMessageFormFocus}
-                onBlur={this.onSendMessageFormBlur}
-                onSubmit={this.onMessageSubmit}
-              />
-            ) : (
-              <div className={css.sendingMessageNotAllowed}>{sendingMessageNotAllowed}</div>
-            )}
-
-            {stateData.showSaleButtons ? (
-              <div className={css.mobileActionButtons}>{saleButtons}</div>
+            {stateData.showCancel48Buttons ?(
+              <div>
+                <div className={css.desktopActionButtons}>{cancelButton}</div>
+              </div>
             ) : null}
-          </div>
-
-          <div className={css.asideDesktop}>
-            <div className={css.detailCard}>
-              <DetailCardImage
-                avatarWrapperClassName={css.avatarWrapperDesktop}
-                listingTitle={listingTitle}
-                image={firstImage}
-                provider={currentProvider}
-                isCustomer={isCustomer}
-              />
-
-              <DetailCardHeadingsMaybe
-                showDetailCardHeadings={stateData.showDetailCardHeadings}
-                listingTitle={listingTitle}
-                subTitle={bookingSubTitle}
-                location={location}
-                geolocation={geolocation}
-                showAddress={stateData.showAddress}
-              />
-              {stateData.showBookingPanel ? (
-                <BookingPanel
-                  className={css.bookingPanel}
-                  titleClassName={css.bookingTitle}
-                  isOwnListing={false}
-                  listing={currentListing}
-                  title={listingTitle}
-                  subTitle={bookingSubTitle}
-                  authorDisplayName={authorDisplayName}
-                  onSubmit={onSubmitBookingRequest}
-                  onManageDisableScrolling={onManageDisableScrolling}
-                  timeSlots={timeSlots}
-                  fetchTimeSlotsError={fetchTimeSlotsError}
-                />
-              ) : null}
-              <BreakdownMaybe
-                className={css.breakdownContainer}
-                transaction={currentTransaction}
-                transactionRole={transactionRole}
-              />
-              {stateData.showSaleButtons ? (
-                <div className={css.desktopActionButtons}>{saleButtons}</div>
-              ) : null}
-              {stateData.showCancelButtons ?(
-                <div>
-                  <div className={css.desktopActionButtons}>{cancelButton}</div>
-                </div>
-              ) : null}
-              {stateData.showDeclineButtons ?(
-                <div>
-                  <div className={css.desktopActionButtons}>{declineButton}</div>
-                </div>
-              ) : null}
-              {stateData.showCancel48Buttons ?(
-                <div>
-                  <div className={css.desktopActionButtons}>{cancelButton}</div>
-                </div>
-              ) : null}
-            </div>
           </div>
         </div>
-        <ReviewModal
-          id="ReviewOrderModal"
-          isOpen={this.state.isReviewModalOpen}
-          onCloseModal={() => this.setState({ isReviewModalOpen: false })}
-          onManageDisableScrolling={onManageDisableScrolling}
-          onSubmitReview={this.onSubmitReview}
-          revieweeName={otherUserDisplayName}
-          reviewSent={this.state.reviewSubmitted}
-          sendReviewInProgress={sendReviewInProgress}
-          sendReviewError={sendReviewError}
-        />
       </div>
-    );
-  }
-}
+      <ReviewModal
+        id="ReviewOrderModal"
+        isOpen={isReviewModalOpen}
+        onCloseModal={() => setIsReviewModalOpen(false)}
+        onManageDisableScrolling={onManageDisableScrolling}
+        onSubmitReview={onSubmitReview}
+        revieweeName={otherUserDisplayName}
+        reviewSent={reviewSubmitted}
+        sendReviewInProgress={sendReviewInProgress}
+        sendReviewError={sendReviewError}
+      />
+    </div>
+  );
+};
 
 TransactionPanelComponent.defaultProps = {
   rootClassName: null,
