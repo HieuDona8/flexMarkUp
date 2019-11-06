@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import { bool, func, instanceOf, object, oneOfType, shape, string } from 'prop-types';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
@@ -96,48 +96,14 @@ const checkIsPaymentExpired = existingTransaction => {
       : false;
 };
 
-export class CheckoutPageComponent extends Component {
-  constructor(props) {
-    super(props);
+const CheckoutPageComponent = props => {
+  let stripe = null;
+  const [ pageData, setPageData] = useState({});
+  const [ dataLoaded, setDataLoaded ] = useState(false);
+  const [ submitting, setSubmitting ] = useState(false);
 
-    this.state = {
-      pageData: {},
-      dataLoaded: false,
-      submitting: false,
-    };
-    this.stripe = null;
 
-    this.onStripeInitialized = this.onStripeInitialized.bind(this);
-    this.loadInitialData = this.loadInitialData.bind(this);
-    this.handlePaymentIntent = this.handlePaymentIntent.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-
-   
-  }
-
-  componentDidMount() {
-    if (window) {      
-      this.loadInitialData();
-    }
-  }
-
-  /**
-   * Load initial data for the page
-   *
-   * Since the data for the checkout is not passed in the URL (there
-   * might be lots of options in the future), we must pass in the data
-   * some other way. Currently the ListingPage sets the initial data
-   * for the CheckoutPage's Redux store.
-   *
-   * For some cases (e.g. a refresh in the CheckoutPage), the Redux
-   * store is empty. To handle that case, we store the received data
-   * to window.sessionStorage and read it from there if no props from
-   * the store exist.
-   *
-   * This function also sets of fetching the speculative transaction
-   * based on this initial data.
-   */
-  loadInitialData() {
+  const loadInitialData =()=>{
     const {
       bookingData,
       bookingDates,
@@ -147,7 +113,7 @@ export class CheckoutPageComponent extends Component {
       fetchStripeCustomer,
       history,      
       isFirstBooking,
-    } = this.props;
+    } = props;
             
     // Fetch currentUser with stripeCustomer entity
     // Note: since there's need for data loading in "componentWillMount" function,
@@ -202,7 +168,6 @@ export class CheckoutPageComponent extends Component {
       
       //quantity
       const { quantity, numberPerson  }= pageData.bookingData || {};
-
       const curentFirstBooking = pageData.isFirstBooking;
       fetchSpeculatedTransaction({
         curentFirstBooking,
@@ -214,10 +179,34 @@ export class CheckoutPageComponent extends Component {
       });
     }
 
-    this.setState({ pageData: pageData || {}, dataLoaded: true });
+    setPageData(pageData || {});
+    setDataLoaded(true);
   }
 
-  handlePaymentIntent(handlePaymentParams) {
+  useEffect(()=>{
+    if (window) {            
+      loadInitialData();
+    }
+  },[]);
+
+  /**
+   * Load initial data for the page
+   *
+   * Since the data for the checkout is not passed in the URL (there
+   * might be lots of options in the future), we must pass in the data
+   * some other way. Currently the ListingPage sets the initial data
+   * for the CheckoutPage's Redux store.
+   *
+   * For some cases (e.g. a refresh in the CheckoutPage), the Redux
+   * store is empty. To handle that case, we store the received data
+   * to window.sessionStorage and read it from there if no props from
+   * the store exist.
+   *
+   * This function also sets of fetching the speculative transaction
+   * based on this initial data.
+   */
+
+  const handlePaymentIntent = handlePaymentParams =>{
     const {
       currentUser,
       stripeCustomerFetched,
@@ -226,7 +215,7 @@ export class CheckoutPageComponent extends Component {
       onConfirmPayment,
       onSendMessage,
       onSavePaymentMethod,      
-    } = this.props;
+    } = props;
 
     const {
       pageData,
@@ -275,7 +264,7 @@ export class CheckoutPageComponent extends Component {
         // Store order.
         const { bookingData, bookingDates, listing } = pageData;
         storeData(bookingData, bookingDates, listing, order, STORAGE_KEY);
-        this.setState({ pageData: { ...pageData, transaction: order } });
+        setPageData({ ...pageData, transaction: order })
       }
 
       const hasPaymentIntents =
@@ -397,15 +386,15 @@ export class CheckoutPageComponent extends Component {
     };
     
     return handlePaymentIntentCreation(orderParams);
-  }
+  };
 
-  handleSubmit(values) {    
-    if (this.state.submitting) {
+  const handleSubmit = values => {       
+    if (submitting) {
       return;
     }
-    this.setState({ submitting: true });
+    setSubmitting(true);
 
-    const { history, speculatedTransaction, currentUser, paymentIntent, dispatch } = this.props;
+    const { history, speculatedTransaction, currentUser, paymentIntent, dispatch } = props;
     //speculatedTransaction.quantity = 1;
     const { card, message, paymentMethod, formValues } = values;
     const {
@@ -443,9 +432,9 @@ export class CheckoutPageComponent extends Component {
     };
 
     const requestPaymentParams = {
-      pageData: this.state.pageData,
+      pageData: pageData,
       speculatedTransaction,
-      stripe: this.stripe,
+      stripe: stripe,
       card,
       billingDetails,
       message,
@@ -455,10 +444,10 @@ export class CheckoutPageComponent extends Component {
     };
 
 
-    this.handlePaymentIntent(requestPaymentParams)
+    handlePaymentIntent(requestPaymentParams)
       .then(res => {        
         const { orderId, messageSuccess, paymentMethodSaved } = res;        
-        this.setState({ submitting: false });
+        setSubmitting(false);
 
         const routes = routeConfiguration();
         const initialMessageFailedToTransaction = messageSuccess ? null : orderId;
@@ -474,19 +463,19 @@ export class CheckoutPageComponent extends Component {
       })
       .catch(err => {
         console.error(err);
-        this.setState({ submitting: false });
+        setSubmitting(false);
       });
-  }
+  };
 
-  onStripeInitialized(stripe) {
-    this.stripe = stripe;
+  const onStripeInitialized = curentStripe=> {
+    stripe = curentStripe;
 
-    const { paymentIntent, onRetrievePaymentIntent } = this.props;
-    const tx = this.state.pageData ? this.state.pageData.transaction : null;
+    const { paymentIntent, onRetrievePaymentIntent } = props;
+    const tx = pageData ? pageData.transaction : null;
 
     // We need to get up to date PI, if booking is created but payment is not expired.
     const shouldFetchPaymentIntent =
-      this.stripe &&
+      stripe &&
       !paymentIntent &&
       tx &&
       tx.id &&
@@ -504,276 +493,353 @@ export class CheckoutPageComponent extends Component {
       // Fetch up to date PaymentIntent from Stripe
       onRetrievePaymentIntent({ stripe, stripePaymentIntentClientSecret });
     }
+  };
+
+  
+  //render
+  const {
+    scrollingDisabled,
+    speculateTransactionInProgress,
+    speculateTransactionError,
+    speculatedTransaction: speculatedTransactionMaybe,
+    initiateOrderError,
+    confirmPaymentError,
+    intl,
+    params,
+    currentUser,
+    handleCardPaymentError,
+    paymentIntent,
+    retrievePaymentIntentError,
+    stripeCustomerFetched,
+  } = props;
+    
+  // Since the listing data is already given from the ListingPage
+  // and stored to handle refreshes, it might not have the possible
+  // deleted or closed information in it. If the transaction
+  // initiate or the speculative initiate fail due to the listing
+  // being deleted or closec, we should dig the information from the
+  // errors and not the listing data.
+  const listingNotFound =
+    isTransactionInitiateListingNotFoundError(speculateTransactionError) ||
+    isTransactionInitiateListingNotFoundError(initiateOrderError);
+
+  const isLoading = !dataLoaded || speculateTransactionInProgress;
+
+  const { listing, bookingDates, transaction } = pageData;
+  const existingTransaction = ensureTransaction(transaction);
+  const speculatedTransaction = ensureTransaction(speculatedTransactionMaybe, {}, null);
+
+  const currentListing = ensureListing(listing);
+  const currentAuthor = ensureUser(currentListing.author);
+
+  const listingTitle = currentListing.attributes.title;
+  const title = intl.formatMessage({ id: 'CheckoutPage.title' }, { listingTitle });
+
+  const pageProps = { title, scrollingDisabled };
+  const topbar = (
+    <div className={css.topbar}>
+      <NamedLink className={css.home} name="LandingPage">
+        <Logo
+          className={css.logoMobile}
+          title={intl.formatMessage({ id: 'CheckoutPage.goToLandingPage' })}
+          format="mobile"
+        />
+        <Logo
+          className={css.logoDesktop}
+          alt={intl.formatMessage({ id: 'CheckoutPage.goToLandingPage' })}
+          format="desktop"
+        />
+      </NamedLink>
+    </div>
+  );
+
+  if (isLoading) {
+    return <Page {...pageProps}>{topbar}</Page>;
   }
 
-  render() {
-    const {
-      scrollingDisabled,
-      speculateTransactionInProgress,
-      speculateTransactionError,
-      speculatedTransaction: speculatedTransactionMaybe,
-      initiateOrderError,
-      confirmPaymentError,
-      intl,
-      params,
-      currentUser,
-      handleCardPaymentError,
-      paymentIntent,
-      retrievePaymentIntentError,
-      stripeCustomerFetched,
-    } = this.props;
+  const isOwnListing =
+    currentUser &&
+    currentUser.id &&
+    currentAuthor &&
+    currentAuthor.id &&
+    currentAuthor.id.uuid === currentUser.id.uuid;
+
+  const hasListingAndAuthor = !!(currentListing.id && currentAuthor.id);
+  const hasBookingDates = !!(
+    bookingDates &&
+    bookingDates.bookingStart &&
+    bookingDates.bookingEnd
+  );
+  const hasRequiredData = hasListingAndAuthor && hasBookingDates;
+  const canShowPage = hasRequiredData && !isOwnListing;
+  const shouldRedirect = !isLoading && !canShowPage;
+
+  // Redirect back to ListingPage if data is missing.
+  // Redirection must happen before any data format error is thrown (e.g. wrong currency)
+  if (shouldRedirect) {
+    // eslint-disable-next-line no-console
+    console.error('Missing or invalid data for checkout, redirecting back to listing page.', {
+      transaction: speculatedTransaction,
+      bookingDates,
+      listing,
+    });
+    return <NamedRedirect name="ListingPage" params={params} />;
+  }
+
+  // Show breakdown only when speculated transaction and booking are loaded
+  // (i.e. have an id)
+  const tx = existingTransaction.booking ? existingTransaction : speculatedTransaction;
+  const txBooking = ensureBooking(tx.booking);    
     
-    // Since the listing data is already given from the ListingPage
-    // and stored to handle refreshes, it might not have the possible
-    // deleted or closed information in it. If the transaction
-    // initiate or the speculative initiate fail due to the listing
-    // being deleted or closec, we should dig the information from the
-    // errors and not the listing data.
-    const listingNotFound =
-      isTransactionInitiateListingNotFoundError(speculateTransactionError) ||
-      isTransactionInitiateListingNotFoundError(initiateOrderError);
-
-    const isLoading = !this.state.dataLoaded || speculateTransactionInProgress;
-
-    const { listing, bookingDates, transaction } = this.state.pageData;
-    const existingTransaction = ensureTransaction(transaction);
-    const speculatedTransaction = ensureTransaction(speculatedTransactionMaybe, {}, null);
-
-    const currentListing = ensureListing(listing);
-    const currentAuthor = ensureUser(currentListing.author);
-
-    const listingTitle = currentListing.attributes.title;
-    const title = intl.formatMessage({ id: 'CheckoutPage.title' }, { listingTitle });
-
-    const pageProps = { title, scrollingDisabled };
-    const topbar = (
-      <div className={css.topbar}>
-        <NamedLink className={css.home} name="LandingPage">
-          <Logo
-            className={css.logoMobile}
-            title={intl.formatMessage({ id: 'CheckoutPage.goToLandingPage' })}
-            format="mobile"
-          />
-          <Logo
-            className={css.logoDesktop}
-            alt={intl.formatMessage({ id: 'CheckoutPage.goToLandingPage' })}
-            format="desktop"
-          />
-        </NamedLink>
-      </div>
-    );
-
-    if (isLoading) {
-      return <Page {...pageProps}>{topbar}</Page>;
-    }
-
-    const isOwnListing =
-      currentUser &&
-      currentUser.id &&
-      currentAuthor &&
-      currentAuthor.id &&
-      currentAuthor.id.uuid === currentUser.id.uuid;
-
-    const hasListingAndAuthor = !!(currentListing.id && currentAuthor.id);
-    const hasBookingDates = !!(
-      bookingDates &&
-      bookingDates.bookingStart &&
-      bookingDates.bookingEnd
-    );
-    const hasRequiredData = hasListingAndAuthor && hasBookingDates;
-    const canShowPage = hasRequiredData && !isOwnListing;
-    const shouldRedirect = !isLoading && !canShowPage;
-
-    // Redirect back to ListingPage if data is missing.
-    // Redirection must happen before any data format error is thrown (e.g. wrong currency)
-    if (shouldRedirect) {
-      // eslint-disable-next-line no-console
-      console.error('Missing or invalid data for checkout, redirecting back to listing page.', {
-        transaction: speculatedTransaction,
-        bookingDates,
-        listing,
-      });
-      return <NamedRedirect name="ListingPage" params={params} />;
-    }
-
-    // Show breakdown only when speculated transaction and booking are loaded
-    // (i.e. have an id)
-    const tx = existingTransaction.booking ? existingTransaction : speculatedTransaction;
-    const txBooking = ensureBooking(tx.booking);    
-    
-    const breakdown =
-      tx.id && txBooking.id ? (
-        <BookingBreakdown
-          className={css.bookingBreakdown}
-          userRole="customer"
-          unitType={config.bookingUnitType}
-          transaction={tx}
-          booking={txBooking}
-        />
-      ) : null;
-    
-    const isPaymentExpired = checkIsPaymentExpired(existingTransaction);
-    const hasDefaultPaymentMethod = !!(
-      stripeCustomerFetched &&
-      ensureStripeCustomer(currentUser.stripeCustomer).attributes.stripeCustomerId &&
-      ensurePaymentMethodCard(currentUser.stripeCustomer.defaultPaymentMethod).id
-    );
-
-    // Allow showing page when currentUser is still being downloaded,
-    // but show payment form only when user info is loaded.
-    const showPaymentForm = !!(
-      currentUser &&
-      hasRequiredData &&
-      !listingNotFound &&
-      !initiateOrderError &&
-      !speculateTransactionError &&
-      !retrievePaymentIntentError &&
-      !isPaymentExpired
-    );
-
-    const firstImage =
-      currentListing.images && currentListing.images.length > 0 ? currentListing.images[0] : null;
-
-    const listingLink = (
-      <NamedLink
-        name="ListingPage"
-        params={{ id: currentListing.id.uuid, slug: createSlug(listingTitle) }}
-      >
-        <FormattedMessage id="CheckoutPage.errorlistingLinkText" />
-      </NamedLink>
-    );
-
-    const isAmountTooLowError = isTransactionInitiateAmountTooLowError(initiateOrderError);
-    const isChargeDisabledError = isTransactionChargeDisabledError(initiateOrderError);
-    const isBookingTimeNotAvailableError = isTransactionInitiateBookingTimeNotAvailableError(
-      initiateOrderError
-    );
-    const stripeErrors = transactionInitiateOrderStripeErrors(initiateOrderError);
-
-    let initiateOrderErrorMessage = null;
-    let listingNotFoundErrorMessage = null;
-
-    if (listingNotFound) {
-      listingNotFoundErrorMessage = (
-        <p className={css.notFoundError}>
-          <FormattedMessage id="CheckoutPage.listingNotFoundError" />
-        </p>
-      );
-    } else if (isAmountTooLowError) {
-      initiateOrderErrorMessage = (
-        <p className={css.orderError}>
-          <FormattedMessage id="CheckoutPage.initiateOrderAmountTooLow" />
-        </p>
-      );
-    } else if (isBookingTimeNotAvailableError) {
-      initiateOrderErrorMessage = (
-        <p className={css.orderError}>
-          <FormattedMessage id="CheckoutPage.bookingTimeNotAvailableMessage" />
-        </p>
-      );
-    } else if (isChargeDisabledError) {
-      initiateOrderErrorMessage = (
-        <p className={css.orderError}>
-          <FormattedMessage id="CheckoutPage.chargeDisabledMessage" />
-        </p>
-      );
-    } else if (stripeErrors && stripeErrors.length > 0) {
-      // NOTE: Error messages from Stripes are not part of translations.
-      // By default they are in English.
-      const stripeErrorsAsString = stripeErrors.join(', ');
-      initiateOrderErrorMessage = (
-        <p className={css.orderError}>
-          <FormattedMessage
-            id="CheckoutPage.initiateOrderStripeError"
-            values={{ stripeErrors: stripeErrorsAsString }}
-          />
-        </p>
-      );
-    } else if (initiateOrderError) {
-      // Generic initiate order error
-      initiateOrderErrorMessage = (
-        <p className={css.orderError}>
-          <FormattedMessage id="CheckoutPage.initiateOrderError" values={{ listingLink }} />
-        </p>
-      );
-    }
-
-    const speculateTransactionErrorMessage = speculateTransactionError ? (
-      <p className={css.speculateError}>
-        <FormattedMessage id="CheckoutPage.speculateTransactionError" />
-      </p>
+  const breakdown =
+    tx.id && txBooking.id ? (
+      <BookingBreakdown
+        className={css.bookingBreakdown}
+        userRole="customer"
+        unitType={config.bookingUnitType}
+        transaction={tx}
+        booking={txBooking}
+      />
     ) : null;
-    let speculateErrorMessage = null;
+  
+  const isPaymentExpired = checkIsPaymentExpired(existingTransaction);
+  const hasDefaultPaymentMethod = !!(
+    stripeCustomerFetched &&
+    ensureStripeCustomer(currentUser.stripeCustomer).attributes.stripeCustomerId &&
+    ensurePaymentMethodCard(currentUser.stripeCustomer.defaultPaymentMethod).id
+  );
 
-    if (isTransactionInitiateMissingStripeAccountError(speculateTransactionError)) {
-      speculateErrorMessage = (
-        <p className={css.orderError}>
-          <FormattedMessage id="CheckoutPage.providerStripeAccountMissingError" />
-        </p>
-      );
-    } else if (isTransactionInitiateBookingTimeNotAvailableError(speculateTransactionError)) {
-      speculateErrorMessage = (
-        <p className={css.orderError}>
-          <FormattedMessage id="CheckoutPage.bookingTimeNotAvailableMessage" />
-        </p>
-      );
-    } else if (isTransactionZeroPaymentError(speculateTransactionError)) {
-      speculateErrorMessage = (
-        <p className={css.orderError}>
-          <FormattedMessage id="CheckoutPage.initiateOrderAmountTooLow" />
-        </p>
-      );
-    } else if (speculateTransactionError) {
-      speculateErrorMessage = (
-        <p className={css.orderError}>
-          <FormattedMessage id="CheckoutPage.speculateFailedMessage" />
-        </p>
-      );
-    }
+  // Allow showing page when currentUser is still being downloaded,
+  // but show payment form only when user info is loaded.
+  const showPaymentForm = !!(
+    currentUser &&
+    hasRequiredData &&
+    !listingNotFound &&
+    !initiateOrderError &&
+    !speculateTransactionError &&
+    !retrievePaymentIntentError &&
+    !isPaymentExpired
+  );
 
-    const unitType = config.bookingUnitType;
-    const isNightly = unitType === LINE_ITEM_NIGHT;
-    const isDaily = unitType === LINE_ITEM_DAY;
+  const firstImage =
+    currentListing.images && currentListing.images.length > 0 ? currentListing.images[0] : null;
 
-    const unitTranslationKey = isNightly
-      ? 'CheckoutPage.perNight'
-      : isDaily
-        ? 'CheckoutPage.perDay'
-        : 'CheckoutPage.perUnit';
+  const listingLink = (
+    <NamedLink
+      name="ListingPage"
+      params={{ id: currentListing.id.uuid, slug: createSlug(listingTitle) }}
+    >
+      <FormattedMessage id="CheckoutPage.errorlistingLinkText" />
+    </NamedLink>
+  );
 
-    const price = currentListing.attributes.price;
-    const formattedPrice = formatMoney(intl, price);
-    const detailsSubTitle = `${formattedPrice} ${intl.formatMessage({ id: unitTranslationKey })}`;
+  const isAmountTooLowError = isTransactionInitiateAmountTooLowError(initiateOrderError);
+  const isChargeDisabledError = isTransactionChargeDisabledError(initiateOrderError);
+  const isBookingTimeNotAvailableError = isTransactionInitiateBookingTimeNotAvailableError(
+    initiateOrderError
+  );
+  const stripeErrors = transactionInitiateOrderStripeErrors(initiateOrderError);
 
-    const showInitialMessageInput = !(
-      existingTransaction && (
-        existingTransaction.attributes.lastTransition === TRANSITION_ENQUIRE ||
-        existingTransaction.attributes.lastTransition === TRANSITION_ENQUIRY_FIRST_TIME||
-        existingTransaction.attributes.lastTransition === TRANSITION_ENQUIRY
-      )
+  let initiateOrderErrorMessage = null;
+  let listingNotFoundErrorMessage = null;
+
+  if (listingNotFound) {
+    listingNotFoundErrorMessage = (
+      <p className={css.notFoundError}>
+        <FormattedMessage id="CheckoutPage.listingNotFoundError" />
+      </p>
     );
+  } else if (isAmountTooLowError) {
+    initiateOrderErrorMessage = (
+      <p className={css.orderError}>
+        <FormattedMessage id="CheckoutPage.initiateOrderAmountTooLow" />
+      </p>
+    );
+  } else if (isBookingTimeNotAvailableError) {
+    initiateOrderErrorMessage = (
+      <p className={css.orderError}>
+        <FormattedMessage id="CheckoutPage.bookingTimeNotAvailableMessage" />
+      </p>
+    );
+  } else if (isChargeDisabledError) {
+    initiateOrderErrorMessage = (
+      <p className={css.orderError}>
+        <FormattedMessage id="CheckoutPage.chargeDisabledMessage" />
+      </p>
+    );
+  } else if (stripeErrors && stripeErrors.length > 0) {
+    // NOTE: Error messages from Stripes are not part of translations.
+    // By default they are in English.
+    const stripeErrorsAsString = stripeErrors.join(', ');
+    initiateOrderErrorMessage = (
+      <p className={css.orderError}>
+        <FormattedMessage
+          id="CheckoutPage.initiateOrderStripeError"
+          values={{ stripeErrors: stripeErrorsAsString }}
+        />
+      </p>
+    );
+  } else if (initiateOrderError) {
+    // Generic initiate order error
+    initiateOrderErrorMessage = (
+      <p className={css.orderError}>
+        <FormattedMessage id="CheckoutPage.initiateOrderError" values={{ listingLink }} />
+      </p>
+    );
+  }
 
-    // Get first and last name of the current user and use it in the StripePaymentForm to autofill the name field
-    const userName =
-      currentUser && currentUser.attributes
-        ? `${currentUser.attributes.profile.firstName} ${currentUser.attributes.profile.lastName}`
-        : null;
+  const speculateTransactionErrorMessage = speculateTransactionError ? (
+    <p className={css.speculateError}>
+      <FormattedMessage id="CheckoutPage.speculateTransactionError" />
+    </p>
+  ) : null;
+  let speculateErrorMessage = null;
 
-    // If paymentIntent status is not waiting user action,
-    // handleCardPayment has been called previously.
-    const hasPaymentIntentUserActionsDone =
-      paymentIntent && STRIPE_PI_USER_ACTIONS_DONE_STATUSES.includes(paymentIntent.status);
+  if (isTransactionInitiateMissingStripeAccountError(speculateTransactionError)) {
+    speculateErrorMessage = (
+      <p className={css.orderError}>
+        <FormattedMessage id="CheckoutPage.providerStripeAccountMissingError" />
+      </p>
+    );
+  } else if (isTransactionInitiateBookingTimeNotAvailableError(speculateTransactionError)) {
+    speculateErrorMessage = (
+      <p className={css.orderError}>
+        <FormattedMessage id="CheckoutPage.bookingTimeNotAvailableMessage" />
+      </p>
+    );
+  } else if (isTransactionZeroPaymentError(speculateTransactionError)) {
+    speculateErrorMessage = (
+      <p className={css.orderError}>
+        <FormattedMessage id="CheckoutPage.initiateOrderAmountTooLow" />
+      </p>
+    );
+  } else if (speculateTransactionError) {
+    speculateErrorMessage = (
+      <p className={css.orderError}>
+        <FormattedMessage id="CheckoutPage.speculateFailedMessage" />
+      </p>
+    );
+  }
 
-    // If your marketplace works mostly in one country you can use initial values to select country automatically
-    // e.g. {country: 'FI'}
+  const unitType = config.bookingUnitType;
+  const isNightly = unitType === LINE_ITEM_NIGHT;
+  const isDaily = unitType === LINE_ITEM_DAY;
 
-    const initalValuesForStripePayment = { name: userName };
+  const unitTranslationKey = isNightly
+    ? 'CheckoutPage.perNight'
+    : isDaily
+      ? 'CheckoutPage.perDay'
+      : 'CheckoutPage.perUnit';
 
-    return (
-      <Page {...pageProps}>
-        {topbar}
-        <div className={css.contentContainer}>
-          <div className={css.aspectWrapper}>
+  const price = currentListing.attributes.price;
+  const formattedPrice = formatMoney(intl, price);
+  const detailsSubTitle = `${formattedPrice} ${intl.formatMessage({ id: unitTranslationKey })}`;
+
+  const showInitialMessageInput = !(
+    existingTransaction && (
+      existingTransaction.attributes.lastTransition === TRANSITION_ENQUIRE ||
+      existingTransaction.attributes.lastTransition === TRANSITION_ENQUIRY_FIRST_TIME||
+      existingTransaction.attributes.lastTransition === TRANSITION_ENQUIRY
+    )
+  );
+
+  // Get first and last name of the current user and use it in the StripePaymentForm to autofill the name field
+  const userName =
+    currentUser && currentUser.attributes
+      ? `${currentUser.attributes.profile.firstName} ${currentUser.attributes.profile.lastName}`
+      : null;
+
+  // If paymentIntent status is not waiting user action,
+  // handleCardPayment has been called previously.
+  const hasPaymentIntentUserActionsDone =
+    paymentIntent && STRIPE_PI_USER_ACTIONS_DONE_STATUSES.includes(paymentIntent.status);
+
+  // If your marketplace works mostly in one country you can use initial values to select country automatically
+  // e.g. {country: 'FI'}
+
+  const initalValuesForStripePayment = { name: userName };
+
+  return (
+    <Page {...pageProps}>
+      {topbar}
+      <div className={css.contentContainer}>
+        <div className={css.aspectWrapper}>
+          <ResponsiveImage
+            rootClassName={css.rootForImage}
+            alt={listingTitle}
+            image={firstImage}
+            variants={['landscape-crop', 'landscape-crop2x']}
+          />
+        </div>
+        <div className={classNames(css.avatarWrapper, css.avatarMobile)}>
+          <AvatarMedium user={currentAuthor} disableProfileLink />
+        </div>
+        <div className={css.bookListingContainer}>
+          <div className={css.heading}>
+            <h1 className={css.title}>{title}</h1>
+            <div className={css.author}>
+              <FormattedMessage
+                id="CheckoutPage.hostedBy"
+                values={{ name: currentAuthor.attributes.profile.displayName }}
+              />
+            </div>
+          </div>
+
+          <div className={css.priceBreakdownContainer}>
+            <h3 className={css.priceBreakdownTitle}>
+              <FormattedMessage id="CheckoutPage.priceBreakdownTitle" />
+            </h3>
+            {speculateTransactionErrorMessage}
+            {breakdown}
+          </div>
+
+          <section className={css.paymentContainer}>
+            {initiateOrderErrorMessage}
+            {listingNotFoundErrorMessage}
+            {speculateErrorMessage}
+            {retrievePaymentIntentError ? (
+              <p className={css.orderError}>
+                <FormattedMessage
+                  id="CheckoutPage.retrievingStripePaymentIntentFailed"
+                  values={{ listingLink }}
+                />
+              </p>
+            ) : null}
+            {showPaymentForm ? (
+              <StripePaymentForm
+                className={css.paymentForm}
+                onSubmit={handleSubmit}
+                inProgress={submitting}
+                formId="CheckoutPagePaymentForm"
+                paymentInfo={intl.formatMessage({ id: 'CheckoutPage.paymentInfo' })}
+                authorDisplayName={currentAuthor.attributes.profile.displayName}
+                showInitialMessageInput={showInitialMessageInput}
+                initialValues={initalValuesForStripePayment}
+                initiateOrderError={initiateOrderError}
+                handleCardPaymentError={handleCardPaymentError}
+                confirmPaymentError={confirmPaymentError}
+                hasHandledCardPayment={hasPaymentIntentUserActionsDone}
+                loadingData={!stripeCustomerFetched}
+                defaultPaymentMethod={
+                  hasDefaultPaymentMethod ? currentUser.stripeCustomer.defaultPaymentMethod : null
+                }
+                paymentIntent={paymentIntent}
+                onStripeInitialized={onStripeInitialized}
+              />
+            ) : null}
+            {isPaymentExpired ? (
+              <p className={css.orderError}>
+                <FormattedMessage
+                  id="CheckoutPage.paymentExpiredMessage"
+                  values={{ listingLink }}
+                />
+              </p>
+            ) : null}
+          </section>
+        </div>
+
+        <div className={css.detailsContainerDesktop}>
+          <div className={css.detailsAspectWrapper}>
             <ResponsiveImage
               rootClassName={css.rootForImage}
               alt={listingTitle}
@@ -781,100 +847,23 @@ export class CheckoutPageComponent extends Component {
               variants={['landscape-crop', 'landscape-crop2x']}
             />
           </div>
-          <div className={classNames(css.avatarWrapper, css.avatarMobile)}>
+          <div className={css.avatarWrapper}>
             <AvatarMedium user={currentAuthor} disableProfileLink />
           </div>
-          <div className={css.bookListingContainer}>
-            <div className={css.heading}>
-              <h1 className={css.title}>{title}</h1>
-              <div className={css.author}>
-                <FormattedMessage
-                  id="CheckoutPage.hostedBy"
-                  values={{ name: currentAuthor.attributes.profile.displayName }}
-                />
-              </div>
-            </div>
-
-            <div className={css.priceBreakdownContainer}>
-              <h3 className={css.priceBreakdownTitle}>
-                <FormattedMessage id="CheckoutPage.priceBreakdownTitle" />
-              </h3>
-              {speculateTransactionErrorMessage}
-              {breakdown}
-            </div>
-
-            <section className={css.paymentContainer}>
-              {initiateOrderErrorMessage}
-              {listingNotFoundErrorMessage}
-              {speculateErrorMessage}
-              {retrievePaymentIntentError ? (
-                <p className={css.orderError}>
-                  <FormattedMessage
-                    id="CheckoutPage.retrievingStripePaymentIntentFailed"
-                    values={{ listingLink }}
-                  />
-                </p>
-              ) : null}
-              {showPaymentForm ? (
-                <StripePaymentForm
-                  className={css.paymentForm}
-                  onSubmit={this.handleSubmit}
-                  inProgress={this.state.submitting}
-                  formId="CheckoutPagePaymentForm"
-                  paymentInfo={intl.formatMessage({ id: 'CheckoutPage.paymentInfo' })}
-                  authorDisplayName={currentAuthor.attributes.profile.displayName}
-                  showInitialMessageInput={showInitialMessageInput}
-                  initialValues={initalValuesForStripePayment}
-                  initiateOrderError={initiateOrderError}
-                  handleCardPaymentError={handleCardPaymentError}
-                  confirmPaymentError={confirmPaymentError}
-                  hasHandledCardPayment={hasPaymentIntentUserActionsDone}
-                  loadingData={!stripeCustomerFetched}
-                  defaultPaymentMethod={
-                    hasDefaultPaymentMethod ? currentUser.stripeCustomer.defaultPaymentMethod : null
-                  }
-                  paymentIntent={paymentIntent}
-                  onStripeInitialized={this.onStripeInitialized}
-                />
-              ) : null}
-              {isPaymentExpired ? (
-                <p className={css.orderError}>
-                  <FormattedMessage
-                    id="CheckoutPage.paymentExpiredMessage"
-                    values={{ listingLink }}
-                  />
-                </p>
-              ) : null}
-            </section>
+          <div className={css.detailsHeadings}>
+            <h2 className={css.detailsTitle}>{listingTitle}</h2>
+            <p className={css.detailsSubtitle}>{detailsSubTitle}</p>
           </div>
-
-          <div className={css.detailsContainerDesktop}>
-            <div className={css.detailsAspectWrapper}>
-              <ResponsiveImage
-                rootClassName={css.rootForImage}
-                alt={listingTitle}
-                image={firstImage}
-                variants={['landscape-crop', 'landscape-crop2x']}
-              />
-            </div>
-            <div className={css.avatarWrapper}>
-              <AvatarMedium user={currentAuthor} disableProfileLink />
-            </div>
-            <div className={css.detailsHeadings}>
-              <h2 className={css.detailsTitle}>{listingTitle}</h2>
-              <p className={css.detailsSubtitle}>{detailsSubTitle}</p>
-            </div>
-            <h3 className={css.bookingBreakdownTitle}>
-              <FormattedMessage id="CheckoutPage.priceBreakdownTitle" />
-            </h3>
-            {speculateTransactionErrorMessage}
-            {breakdown}
-          </div>
+          <h3 className={css.bookingBreakdownTitle}>
+            <FormattedMessage id="CheckoutPage.priceBreakdownTitle" />
+          </h3>
+          {speculateTransactionErrorMessage}
+          {breakdown}
         </div>
-      </Page>
-    );
-  }
-}
+      </div>
+    </Page>
+  );
+};
 
 CheckoutPageComponent.defaultProps = {
   initiateOrderError: null,

@@ -236,5 +236,5 @@ export const bookingPersonBig = inValidMessage => value => {
   return value > 10 ? inValidMessage : null;  
 };
 
-export const composeValidators = (...validators) => value =>
-  validators.reduce((error, validator) => error || validator(value), VALID);
+export const composeValidators = (...validators) => (value, allValues, fieldState) =>
+  validators.reduce((error, validator) => error || validator(value, allValues, fieldState), VALID);
